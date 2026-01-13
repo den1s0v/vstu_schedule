@@ -8,7 +8,7 @@ logger = logging.getLogger("apps.panel.services.corrections")
 
 class ContextElement:
     """Элемент контекста (ключ-значение)."""
-    
+
     def __init__(
         self,
         key: str,
@@ -22,7 +22,7 @@ class ContextElement:
         self.important = important
         self.weight = weight
         self.absence_allowed = absence_allowed
-    
+
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ContextElement":
         """Создание ContextElement из словаря."""
@@ -33,7 +33,7 @@ class ContextElement:
             weight=data.get("weight", 1.0),
             absence_allowed=data.get("absence_allowed", False),
         )
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Преобразование в словарь."""
         return {
@@ -62,13 +62,13 @@ def check_context_match(
     """
     matches = True
     total_score = 0.0
-    
+
     # Создаем словарь для быстрого поиска элементов контекста Occurrence
     occurrence_dict = {elem.key: elem for elem in occurrence_context}
-    
+
     for required in required_elements:
         occurrence_elem = occurrence_dict.get(required.key)
-        
+
         if occurrence_elem is None:
             # Элемент отсутствует в Occurrence
             if required.absence_allowed:
@@ -94,5 +94,5 @@ def check_context_match(
                     # Неважный элемент не совпал - соответствует, но score меньше
                     # Не добавляем weight к score
                     pass
-    
+
     return matches, total_score

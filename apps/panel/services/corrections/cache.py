@@ -1,7 +1,6 @@
 """Функции для кеширования resolved_to."""
 
 import logging
-from typing import Optional
 
 from apps.panel.models import Occurrence, Scope
 
@@ -16,13 +15,13 @@ def is_cache_valid(occurrence: Occurrence) -> bool:
     """
     if occurrence.resolved_to is None:
         return False
-    
+
     try:
         scope = occurrence.scope
         if scope is None:
             # Если scope не найден, считаем кеш невалидным
             return False
-        
+
         # Кеш актуален, если дата обновления occurrence >= даты обновления scope
         return occurrence.updated_at >= scope.updated_at
     except Scope.DoesNotExist:
@@ -37,9 +36,9 @@ def invalidate_cache_for_scope(scope_id: int) -> None:
     Фактически просто обновляет updated_at для всех Occurrence в scope,
     что приведет к пересчету при следующей проверке.
     """
-    from django.utils import timezone
     from django.db import transaction
-    
+    from django.utils import timezone
+
     with transaction.atomic():
         # Обновляем updated_at для всех Occurrence в scope
         # Это инвалидирует кеш, так как is_cache_valid проверяет updated_at
