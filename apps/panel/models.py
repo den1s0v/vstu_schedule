@@ -1,15 +1,13 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.db.models import Q, UniqueConstraint, CheckConstraint
-from django.utils import timezone
+from django.db.models import CheckConstraint, Q, UniqueConstraint
 
 
 class Scope(models.Model):
     """Область действия корректировок."""
-    
+
     description = models.TextField(blank=True, null=True, verbose_name="Описание")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
-    
+
     class Meta:
         db_table = "scopes"
         verbose_name = "Область действия"
@@ -17,14 +15,14 @@ class Scope(models.Model):
         indexes = [
             models.Index(fields=["updated_at"], name="scopes_updated_at_idx"),
         ]
-    
+
     def __str__(self) -> str:
         return f"Scope #{self.id}" + (f": {self.description[:50]}" if self.description else "")
 
 
 class Occurrence(models.Model):
     """Входной объект из слоя входных данных (необработанные данные)."""
-    
+
     value = models.CharField(max_length=500, verbose_name="Значение")
     context = models.JSONField(default=list, verbose_name="Контекст")
     score = models.FloatField(default=1.0, verbose_name="Оценка")
@@ -45,7 +43,7 @@ class Occurrence(models.Model):
         related_name="resolved_occurrences",
         verbose_name="Разрешено в"
     )
-    
+
     class Meta:
         db_table = "occurrences"
         verbose_name = "Вхождение"
@@ -62,14 +60,14 @@ class Occurrence(models.Model):
                 name="occurrences_value_context_unique"
             ),
         ]
-    
+
     def __str__(self) -> str:
         return f"Occurrence #{self.id}: {self.value[:50]}"
 
 
 class CorrectObject(models.Model):
     """Корректный логический объект из слоя корректировок."""
-    
+
     external_id = models.TextField(blank=True, null=True, unique=True, verbose_name="Внешний ID")
     value = models.CharField(max_length=500, verbose_name="Значение")
     required_context_elements = models.JSONField(default=list, verbose_name="Обязательные элементы контекста")
@@ -86,7 +84,7 @@ class CorrectObject(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
     name = models.TextField(blank=True, null=True, verbose_name="Название")
     description = models.TextField(blank=True, null=True, verbose_name="Описание")
-    
+
     class Meta:
         db_table = "correct_objects"
         verbose_name = "Корректный объект"
@@ -110,19 +108,19 @@ class CorrectObject(models.Model):
                 name="correct_objects_value_context_unique"
             ),
         ]
-    
+
     def __str__(self) -> str:
         return f"CorrectObject #{self.id}: {self.value[:50]}"
 
 
 class Resolution(models.Model):
     """Разрешение: связь Occurrence → CorrectObject."""
-    
+
     class Status(models.IntegerChoices):
         PENDING = 0, "Ожидает проверки"
         APPROVED = 1, "Утверждено"
         INVALID = 9, "Аннулировано"
-    
+
     occurrence = models.ForeignKey(
         Occurrence,
         on_delete=models.CASCADE,
@@ -150,7 +148,7 @@ class Resolution(models.Model):
         related_name="resolutions",
         verbose_name="Область действия"
     )
-    
+
     class Meta:
         db_table = "resolutions"
         verbose_name = "Разрешение"
@@ -175,44 +173,44 @@ class Resolution(models.Model):
                 name="resolutions_status_check"
             ),
         ]
-    
+
     def clean(self) -> None:
         """Валидация модели."""
         from django.core.exceptions import ValidationError
-        
+
         # Проверка: максимум один APPROVED на occurrence_id
         if self.status == self.Status.APPROVED:
             existing_approved = Resolution.objects.filter(
                 occurrence=self.occurrence,
                 status=self.Status.APPROVED
             ).exclude(pk=self.pk if self.pk else None)
-            
+
             if existing_approved.exists():
                 raise ValidationError(
                     "Для данного вхождения уже существует утвержденное разрешение. "
                     "Сначала аннулируйте существующее."
                 )
-        
+
         super().clean()
-    
+
     def save(self, *args, **kwargs) -> None:
         """Переопределение save для валидации."""
         self.full_clean()
         super().save(*args, **kwargs)
-    
+
     def __str__(self) -> str:
         return f"Resolution #{self.id}: {self.occurrence.value[:30]} → {self.correct_object.value[:30]}"
-    
+
     @property
     def is_pending(self) -> bool:
         """Проверка, является ли разрешение ожидающим проверки."""
         return self.status == self.Status.PENDING
-    
+
     @property
     def is_approved(self) -> bool:
         """Проверка, является ли разрешение утвержденным."""
         return self.status == self.Status.APPROVED
-    
+
     @property
     def is_invalid(self) -> bool:
         """Проверка, является ли разрешение аннулированным."""
