@@ -1,0 +1,246 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Корректировки - Редактирование разрешения{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .corrections-container {
+        padding: 20px;
+    }
+    .resolution-details {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .detail-row {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .detail-label {
+        font-weight: bold;
+    }
+    .monospace {
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        background: white;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 3px;
+        font-weight: bold;
+    }
+    .status-pending {
+        background: #ffcccc;
+        color: #cc0000;
+    }
+    .status-approved {
+        background: #ccffcc;
+        color: #006600;
+    }
+    .status-invalid {
+        background: #e0e0e0;
+        color: #666666;
+    }
+    .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    .actions form {
+        display: inline;
+    }
+    .btn {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-approve {
+        background: #28a745;
+        color: white;
+    }
+    .btn-approve:hover {
+        background: #218838;
+    }
+    .btn-invalidate {
+        background: #6c757d;
+        color: white;
+    }
+    .btn-invalidate:hover {
+        background: #5a6268;
+    }
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+    .btn-delete:hover {
+        background: #c82333;
+    }
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+    .related-resolutions {
+        margin-top: 30px;
+    }
+    .related-resolutions table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+    .related-resolutions th, .related-resolutions td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    .related-resolutions th {
+        background: #f8f9fa;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="corrections-container">
+    <h1>Редактирование разрешения #{{ resolution.id }}</h1>
+    
+    <div class="resolution-details">
+        <div class="detail-row">
+            <span class="detail-label">Вхождение:</span>
+            <span class="monospace">{{ resolution.occurrence.value }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Корректный объект:</span>
+            <span class="monospace">{{ resolution.correct_object.value }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Статус:</span>
+            <span>
+                {% if resolution.status == 0 %}
+                    <span class="status-badge status-pending">PENDING</span>
+                {% elif resolution.status == 1 %}
+                    <span class="status-badge status-approved">APPROVED</span>
+                {% elif resolution.status == 9 %}
+                    <span class="status-badge status-invalid">INVALID</span>
+                {% endif %}
+            </span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Score:</span>
+            <span>{{ resolution.score|floatformat:2 }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Создано вручную:</span>
+            <span>{% if resolution.manual %}Да{% else %}Нет{% endif %}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Область действия:</span>
+            <span>Scope #{{ resolution.scope.id }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Дата создания:</span>
+            <span>{{ resolution.created_at|date:"d.m.Y H:i" }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Дата обновления:</span>
+            <span>{{ resolution.updated_at|date:"d.m.Y H:i" }}</span>
+        </div>
+    </div>
+    
+    <div class="actions">
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="change_status">
+            <label for="status">Изменить статус:</label>
+            <select name="status" id="status">
+                <option value="0" {% if resolution.status == 0 %}selected{% endif %}>PENDING</option>
+                <option value="1" {% if resolution.status == 1 %}selected{% endif %}>APPROVED</option>
+                <option value="9" {% if resolution.status == 9 %}selected{% endif %}>INVALID</option>
+            </select>
+            <button type="submit" class="btn btn-secondary">Сохранить</button>
+        </form>
+        
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="approve">
+            <button type="submit" class="btn btn-approve">Утвердить</button>
+        </form>
+        
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="invalidate">
+            <button type="submit" class="btn btn-invalidate">Аннулировать</button>
+        </form>
+        
+        <form method="post" style="display: inline;" onsubmit="return confirm('Вы уверены, что хотите удалить это разрешение?');">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete">
+            <button type="submit" class="btn btn-delete">Удалить</button>
+        </form>
+        
+        <a href="{% url 'panel:corrections:resolution_list' %}" class="btn btn-secondary">Назад к списку</a>
+    </div>
+    
+    {% if related_resolutions %}
+        <div class="related-resolutions">
+            <h2>Другие разрешения для этого вхождения</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Корректный объект</th>
+                        <th>Статус</th>
+                        <th>Score</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rel_res in related_resolutions %}
+                        <tr {% if rel_res.id == resolution.id %}style="background: #fff3cd;"{% endif %}>
+                            <td>{{ rel_res.id }}</td>
+                            <td class="monospace">{{ rel_res.correct_object.value|truncatewords:10 }}</td>
+                            <td>
+                                {% if rel_res.status == 0 %}
+                                    <span class="status-badge status-pending">PENDING</span>
+                                {% elif rel_res.status == 1 %}
+                                    <span class="status-badge status-approved">APPROVED</span>
+                                {% elif rel_res.status == 9 %}
+                                    <span class="status-badge status-invalid">INVALID</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ rel_res.score|floatformat:2 }}</td>
+                            <td>
+                                {% if rel_res.id != resolution.id %}
+                                    <a href="{% url 'panel:corrections:resolution_edit' rel_res.id %}">Редактировать</a>
+                                {% else %}
+                                    <strong>Текущее</strong>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
