@@ -1,0 +1,258 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Корректировки - Список разрешений{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .corrections-container {
+        padding: 20px;
+    }
+    .filters {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .filters form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        align-items: end;
+    }
+    .filters .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .filters label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .filters input, .filters select {
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+    }
+    .filters button {
+        padding: 8px 15px;
+        background: #007cba;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    .filters button:hover {
+        background: #005a87;
+    }
+    .stats {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        padding: 10px;
+        background: #e9ecef;
+        border-radius: 5px;
+    }
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background: #f8f9fa;
+        font-weight: bold;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .status-pending {
+        background: #ffcccc;
+        color: #cc0000;
+    }
+    .status-approved {
+        background: #ccffcc;
+        color: #006600;
+    }
+    .status-invalid {
+        background: #e0e0e0;
+        color: #666666;
+    }
+    .monospace {
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+    }
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+    }
+    .pagination a, .pagination span {
+        padding: 5px 10px;
+        border: 1px solid #ddd;
+        text-decoration: none;
+        color: #007cba;
+    }
+    .pagination .current {
+        background: #007cba;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="corrections-container">
+    <h1>Корректировки - Список разрешений</h1>
+    
+    <div class="stats">
+        <div class="stat-item">
+            <span class="stat-value">{{ stats.total }}</span>
+            <span class="stat-label">Всего</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">{{ stats.pending }}</span>
+            <span class="stat-label">Ожидают проверки</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">{{ stats.approved }}</span>
+            <span class="stat-label">Утверждено</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">{{ stats.invalid }}</span>
+            <span class="stat-label">Аннулировано</span>
+        </div>
+    </div>
+    
+    <div class="filters">
+        <form method="get">
+            <div class="form-group">
+                <label for="scope_id">Область действия:</label>
+                <select name="scope_id" id="scope_id">
+                    <option value="">Все</option>
+                    {% for scope in scopes %}
+                        <option value="{{ scope.id }}" {% if current_scope_id == scope.id|stringformat:"s" %}selected{% endif %}>
+                            Scope #{{ scope.id }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="search_occurrence">Поиск по вхождению:</label>
+                <input type="text" name="search_occurrence" id="search_occurrence" value="{{ search_occurrence }}" placeholder="Введите текст...">
+            </div>
+            
+            <div class="form-group">
+                <label for="search_correct">Поиск по корректному объекту:</label>
+                <input type="text" name="search_correct" id="search_correct" value="{{ search_correct }}" placeholder="Введите текст...">
+            </div>
+            
+            <div class="form-group">
+                <label>Статус:</label>
+                <div>
+                    <label><input type="checkbox" name="status" value="0" {% if "0" in status_filter %}checked{% endif %}> PENDING</label>
+                    <label><input type="checkbox" name="status" value="1" {% if "1" in status_filter %}checked{% endif %}> APPROVED</label>
+                    <label><input type="checkbox" name="status" value="9" {% if "9" in status_filter %}checked{% endif %}> INVALID</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label><input type="checkbox" name="conflicts_only" value="1" {% if conflicts_only %}checked{% endif %}> Только конфликты</label>
+            </div>
+            
+            <div class="form-group">
+                <label for="sort_by">Сортировка:</label>
+                <select name="sort_by" id="sort_by">
+                    <option value="-score" {% if sort_by == "-score" %}selected{% endif %}>Score (убыв.)</option>
+                    <option value="score" {% if sort_by == "score" %}selected{% endif %}>Score (возр.)</option>
+                    <option value="occurrence__value" {% if sort_by == "occurrence__value" %}selected{% endif %}>Вхождение (А-Я)</option>
+                    <option value="-occurrence__value" {% if sort_by == "-occurrence__value" %}selected{% endif %}>Вхождение (Я-А)</option>
+                    <option value="-created_at" {% if sort_by == "-created_at" %}selected{% endif %}>Дата создания (новые)</option>
+                    <option value="created_at" {% if sort_by == "created_at" %}selected{% endif %}>Дата создания (старые)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit">Применить фильтры</button>
+            </div>
+        </form>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Вхождение</th>
+                <th>Статус</th>
+                <th>Корректный объект</th>
+                <th>Score</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resolution in resolutions %}
+                <tr>
+                    <td>{{ resolution.id }}</td>
+                    <td class="monospace">{{ resolution.occurrence.value|truncatewords:10 }}</td>
+                    <td>
+                        {% if resolution.status == 0 %}
+                            <span class="status-badge status-pending">PENDING</span>
+                        {% elif resolution.status == 1 %}
+                            <span class="status-badge status-approved">APPROVED</span>
+                        {% elif resolution.status == 9 %}
+                            <span class="status-badge status-invalid">INVALID</span>
+                        {% endif %}
+                    </td>
+                    <td class="monospace">{{ resolution.correct_object.value|truncatewords:10 }}</td>
+                    <td>{{ resolution.score|floatformat:2 }}</td>
+                    <td>
+                        <a href="{% url 'panel:corrections:resolution_edit' resolution.id %}">Редактировать</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px;">
+                        Нет разрешений, соответствующих фильтрам
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if page.has_other_pages %}
+        <div class="pagination">
+            {% if page.has_previous %}
+                <a href="?page={{ page.previous_page_number }}{% if current_scope_id %}&scope_id={{ current_scope_id }}{% endif %}{% if search_occurrence %}&search_occurrence={{ search_occurrence }}{% endif %}{% if search_correct %}&search_correct={{ search_correct }}{% endif %}{% for s in status_filter %}&status={{ s }}{% endfor %}{% if conflicts_only %}&conflicts_only=1{% endif %}&sort_by={{ sort_by }}">← Предыдущая</a>
+            {% endif %}
+            
+            <span class="current">
+                Страница {{ page.number }} из {{ page.paginator.num_pages }}
+            </span>
+            
+            {% if page.has_next %}
+                <a href="?page={{ page.next_page_number }}{% if current_scope_id %}&scope_id={{ current_scope_id }}{% endif %}{% if search_occurrence %}&search_occurrence={{ search_occurrence }}{% endif %}{% if search_correct %}&search_correct={{ search_correct }}{% endif %}{% for s in status_filter %}&status={{ s }}{% endfor %}{% if conflicts_only %}&conflicts_only=1{% endif %}&sort_by={{ sort_by }}">Следующая →</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
