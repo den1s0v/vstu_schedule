@@ -1,0 +1,157 @@
+{% extends "panel/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Корректировки L2" %}{% endblock %}
+{% block topbar_title %}{% trans "Корректировки — объекты и варианты" %}{% endblock %}
+
+{% block content %}
+{% include "panel/corrections/_tabs.html" %}
+
+<form method="get" class="panel-form" style="margin-bottom:1rem;">
+  <label>{% trans "Область" %}
+    <select name="scope">
+      {% for s in scopes %}
+        <option value="{{ s.key }}" {% if s.key == scope.key %}selected{% endif %}>{{ s.key }}</option>
+      {% empty %}
+        <option value="global">global</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>{% trans "Тип" %} <input name="entity_type" value="{{ entity_type }}"></label>
+  <button type="submit">{% trans "Показать" %}</button>
+</form>
+
+<section class="panel-card">
+  <h2>{% trans "Политика" %}</h2>
+  <form method="post" class="panel-form">
+    {% csrf_token %}
+    <input type="hidden" name="scope" value="{{ scope.key }}">
+    <input type="hidden" name="entity_type" value="{{ entity_type }}">
+    <input type="hidden" name="action" value="ensure_policy">
+    <label>auto_link <input name="auto_link_threshold" value="{{ policy.auto_link_threshold|default:'0.95' }}"></label>
+    <label>suggest <input name="suggest_threshold" value="{{ policy.suggest_threshold|default:'0.8' }}"></label>
+    <label>cluster <input name="confirmation_threshold" value="{{ policy.confirmation_threshold|default:'3' }}"></label>
+    <label><input type="checkbox" name="enabled" {% if policy.enabled or not policy %}checked{% endif %}> {% trans "Включено" %}</label>
+    <button type="submit">{% trans "Сохранить политику" %}</button>
+  </form>
+</section>
+
+<section class="panel-card">
+  <h2>{% trans "Корректные объекты" %}</h2>
+  <table class="panel-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>{% trans "Значение" %}</th>
+        <th>external_id</th>
+        <th>origin</th>
+        <th>total</th>
+        <th>unique</th>
+        <th>{% trans "Варианты" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for obj in objects %}
+      <tr>
+        <td>{{ obj.id }}</td>
+        <td><code>{{ obj.canonical_value }}</code></td>
+        <td>{{ obj.external_id }}</td>
+        <td>{{ obj.origin }}</td>
+        <td>{{ obj.usage_total }}</td>
+        <td>{{ obj.usage_unique }}</td>
+        <td>
+          {% for link in obj.variant_links.all %}
+            <span class="badge">{{ link.variant.value }} [{{ link.status }}]</span>
+          {% endfor %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">{% trans "Объектов пока нет." %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="panel-card">
+  <h2>{% trans "Связи" %}</h2>
+  <table class="panel-table">
+    <thead>
+      <tr><th>ID</th><th>{% trans "Вариант" %}</th><th>{% trans "Объект" %}</th><th>{% trans "Статус" %}</th><th>score</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for link in links %}
+      <tr>
+        <td>{{ link.id }}</td>
+        <td><code>{{ link.variant.value }}</code> (#{{ link.variant_id }})</td>
+        <td><code>{{ link.correct_object.canonical_value }}</code> (#{{ link.correct_object_id }})</td>
+        <td>{{ link.status }} / {{ link.source }}</td>
+        <td>{{ link.score|floatformat:3 }}</td>
+        <td>
+          <form method="post" style="display:inline">{% csrf_token %}
+            <input type="hidden" name="scope" value="{{ scope.key }}">
+            <input type="hidden" name="entity_type" value="{{ entity_type }}">
+            <input type="hidden" name="action" value="approve_link">
+            <input type="hidden" name="variant_id" value="{{ link.variant_id }}">
+            <input type="hidden" name="object_id" value="{{ link.correct_object_id }}">
+            <button type="submit">{% trans "Утвердить" %}</button>
+          </form>
+          <form method="post" style="display:inline">{% csrf_token %}
+            <input type="hidden" name="scope" value="{{ scope.key }}">
+            <input type="hidden" name="entity_type" value="{{ entity_type }}">
+            <input type="hidden" name="action" value="forbid_link">
+            <input type="hidden" name="variant_id" value="{{ link.variant_id }}">
+            <input type="hidden" name="object_id" value="{{ link.correct_object_id }}">
+            <button type="submit">{% trans "Запретить" %}</button>
+          </form>
+          <form method="post" style="display:inline">{% csrf_token %}
+            <input type="hidden" name="scope" value="{{ scope.key }}">
+            <input type="hidden" name="entity_type" value="{{ entity_type }}">
+            <input type="hidden" name="action" value="remove_link">
+            <input type="hidden" name="link_id" value="{{ link.id }}">
+            <button type="submit">{% trans "Удалить" %}</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6">{% trans "Связей нет." %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="panel-card">
+  <h2>{% trans "Песочница matching" %}</h2>
+  <form method="post" class="panel-form">
+    {% csrf_token %}
+    <input type="hidden" name="scope" value="{{ scope.key }}">
+    <input type="hidden" name="entity_type" value="{{ entity_type }}">
+    <input type="hidden" name="action" value="sandbox">
+    <label>{% trans "Вариант" %} <input name="sandbox_text" style="width:100%"></label>
+    <button type="submit">{% trans "Сопоставить" %}</button>
+  </form>
+  {% if match_result %}
+    <p>{% trans "Связано с" %}: {{ match_result.linked_object_ids }}</p>
+    <ul>
+      {% for c in match_result.candidates %}
+        <li>#{{ c.correct_object_id }} {{ c.canonical_value }} — {{ c.score|floatformat:3 }} ({{ c.source }})</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</section>
+
+<section class="panel-card">
+  <h2>{% trans "Импорт словаря JSON" %}</h2>
+  <form method="post" class="panel-form">
+    {% csrf_token %}
+    <input type="hidden" name="scope" value="{{ scope.key }}">
+    <input type="hidden" name="entity_type" value="{{ entity_type }}">
+    <input type="hidden" name="action" value="import_dictionary">
+    <textarea name="dictionary_json" rows="10" style="width:100%">{
+  "entity_type": "{{ entity_type }}",
+  "scope_key": "{{ scope.key }}",
+  "items": [{"external_id": "t1", "canonical_value": "Иванов А.А.", "aliases": ["Иванов АА"]}]
+}</textarea>
+    <button type="submit">{% trans "Импортировать" %}</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CorrectionDictionary",
+  "type": "object",
+  "required": ["entity_type", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "entity_type": { "type": "string", "minLength": 1 },
+    "scope_key": { "type": "string" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["canonical_value"],
+        "additionalProperties": false,
+        "properties": {
+          "external_id": { "type": "string" },
+          "canonical_value": { "type": "string", "minLength": 1 },
+          "aliases": { "type": "array", "items": { "type": "string" } },
+          "metadata": { "type": "object" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{% extends "panel/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Корректировки L3" %}{% endblock %}
+{% block topbar_title %}{% trans "Корректировки — неоднозначности" %}{% endblock %}
+
+{% block content %}
+{% include "panel/corrections/_tabs.html" %}
+
+<form method="get" class="panel-form" style="margin-bottom:1rem;">
+  <label>{% trans "Область" %}
+    <select name="scope" onchange="this.form.submit()">
+      {% for s in scopes %}
+        <option value="{{ s.key }}" {% if s.key == scope.key %}selected{% endif %}>{{ s.key }}</option>
+      {% empty %}
+        <option value="global">global</option>
+      {% endfor %}
+    </select>
+  </label>
+</form>
+
+<p>{% trans "Зарегистрированные стратегии" %}: {{ resolvers|join:", " }}</p>
+
+{% for case in cases %}
+<section class="panel-card">
+  <h2>{% trans "Кейс" %} #{{ case.id }} — <code>{{ case.variant.value }}</code> [{{ case.status }}]</h2>
+  <p>{% trans "Тип" %}: {{ case.entity_type }} · fingerprint: <code>{{ case.fingerprint|slice:":12" }}…</code></p>
+  <ul>
+    {% for cand in case.candidates.all %}
+      <li>
+        #{{ cand.correct_object_id }} <code>{{ cand.correct_object.canonical_value }}</code>
+        score={{ cand.score|floatformat:3 }}
+        <form method="post" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="scope" value="{{ scope.key }}">
+          <input type="hidden" name="action" value="resolve">
+          <input type="hidden" name="case_id" value="{{ case.id }}">
+          <input type="hidden" name="object_id" value="{{ cand.correct_object_id }}">
+          <button type="submit">{% trans "Выбрать" %}</button>
+        </form>
+      </li>
+    {% empty %}
+      <li>{% trans "Кандидатов нет." %}</li>
+    {% endfor %}
+  </ul>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="scope" value="{{ scope.key }}">
+    <input type="hidden" name="action" value="resolve">
+    <input type="hidden" name="case_id" value="{{ case.id }}">
+    <button type="submit">{% trans "Сбросить решение" %}</button>
+  </form>
+</section>
+{% empty %}
+<p>{% trans "Открытых кейсов нет." %}</p>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "panel/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Корректировки L1" %}{% endblock %}
+{% block topbar_title %}{% trans "Корректировки — перезапись строк" %}{% endblock %}
+
+{% block content %}
+{% include "panel/corrections/_tabs.html" %}
+
+<form method="get" class="panel-form" style="margin-bottom:1rem;">
+  <label>{% trans "Область" %}
+    <select name="scope" onchange="this.form.submit()">
+      {% for s in scopes %}
+        <option value="{{ s.key }}" {% if s.key == scope.key %}selected{% endif %}>{{ s.key }}</option>
+      {% empty %}
+        <option value="global">global</option>
+      {% endfor %}
+    </select>
+  </label>
+</form>
+
+<section class="panel-card">
+  <h2>{% trans "Правила" %}</h2>
+  <table class="panel-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>{% trans "Режим" %}</th>
+        <th>{% trans "Искать" %}</th>
+        <th>{% trans "Заменить" %}</th>
+        <th>{% trans "Приоритет" %}</th>
+        <th>total</th>
+        <th>unique</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rule in rules %}
+      <tr>
+        <td>{{ rule.id }}</td>
+        <td>{{ rule.mode }}</td>
+        <td><code>{{ rule.search }}</code></td>
+        <td><code>{{ rule.replacement }}</code></td>
+        <td>{{ rule.priority }}</td>
+        <td>{{ rule.usage_total }}</td>
+        <td>{{ rule.usage_unique }}</td>
+        <td>
+          <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="scope" value="{{ scope.key }}">
+            <input type="hidden" name="action" value="delete_rule">
+            <input type="hidden" name="rule_id" value="{{ rule.id }}">
+            <button type="submit">{% trans "Удалить" %}</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8">{% trans "Правил пока нет." %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="panel-card">
+  <h2>{% trans "Новое / правка правила" %}</h2>
+  <form method="post" class="panel-form">
+    {% csrf_token %}
+    <input type="hidden" name="scope" value="{{ scope.key }}">
+    <input type="hidden" name="action" value="save_rule">
+    <label>ID <input name="rule_id" placeholder="{% trans 'пусто = создать' %}"></label>
+    <label>{% trans "Режим" %}
+      <select name="mode">
+        {% for value, label in modes %}
+          <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>{% trans "Искать" %} <input name="search" required></label>
+    <label>{% trans "Заменить" %} <input name="replacement"></label>
+    <label>{% trans "Приоритет" %} <input name="priority" type="number" value="100"></label>
+    <label>{% trans "Препроцессоры (через запятую)" %} <input name="preprocess" placeholder="fix_sparse_words"></label>
+    <label><input type="checkbox" name="enabled" checked> {% trans "Включено" %}</label>
+    <button type="submit">{% trans "Сохранить" %}</button>
+  </form>
+</section>
+
+<section class="panel-card">
+  <h2>{% trans "Песочница" %}</h2>
+  <form method="post" class="panel-form">
+    {% csrf_token %}
+    <input type="hidden" name="scope" value="{{ scope.key }}">
+    <input type="hidden" name="action" value="sandbox">
+    <label>{% trans "Текст" %} <input name="sandbox_text" style="width:100%"></label>
+    <button type="submit">{% trans "Прогнать" %}</button>
+  </form>
+  {% if sandbox_result %}
+    <p><strong>{% trans "Вход" %}:</strong> <code>{{ sandbox_result.input_text }}</code></p>
+    <p><strong>{% trans "Выход" %}:</strong> <code>{{ sandbox_result.output_text }}</code></p>
+    <ul>
+      {% for step in sandbox_result.steps %}
+        <li>{{ step.kind }}: {{ step.detail }} — <code>{{ step.before }}</code> → <code>{{ step.after }}</code></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</section>
+{% endblock %}

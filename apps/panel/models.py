@@ -112,4 +112,31 @@ class CeleryTaskLog(models.Model):
         return f"{self.level_name} {self.logger_name}: {self.message[:80]}"
 
 
-# Create your models here.
+from apps.panel.corrections.models import (  # noqa: E402
+    CorrectionScope,
+    CorrectionUsage,
+    CorrectObject,
+    DisambiguationCandidate,
+    DisambiguationCase,
+    EditableModel,
+    EntityCreationPolicy,
+    SpellingVariant,
+    TextRewriteRule,
+    VariantObjectLink,
+)
+
+__all__ = [
+    "CeleryTaskConfig",
+    "CeleryTaskLog",
+    "CeleryTaskRun",
+    "CorrectObject",
+    "CorrectionScope",
+    "CorrectionUsage",
+    "DisambiguationCandidate",
+    "DisambiguationCase",
+    "EditableModel",
+    "EntityCreationPolicy",
+    "SpellingVariant",
+    "TextRewriteRule",
+    "VariantObjectLink",
+]

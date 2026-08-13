@@ -2,10 +2,20 @@ from django.urls import path
 from django.views.generic import RedirectView
 
 from apps.panel.views import api_clients, monitor_view, task_view
+from apps.panel.views.corrections import (
+    corrections_index,
+    corrections_l1,
+    corrections_l2,
+    corrections_l3,
+)
 
 from .views import panel
 
 urlpatterns = [
+    path("corrections/", corrections_index, name="panel_corrections"),
+    path("corrections/l1/", corrections_l1, name="panel_corrections_l1"),
+    path("corrections/l2/", corrections_l2, name="panel_corrections_l2"),
+    path("corrections/l3/", corrections_l3, name="panel_corrections_l3"),
     path("", RedirectView.as_view(url="/panel/timetable_update/", permanent=False)),
     path("login/", RedirectView.as_view(pattern_name="admin:login", permanent=False)),
     path("actions/", panel.actions_panel, name="panel_actions"),

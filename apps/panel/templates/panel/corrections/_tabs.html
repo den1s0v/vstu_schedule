@@ -1,0 +1,13 @@
+{% load i18n %}
+<nav class="panel-subnav" style="display:flex;gap:1rem;margin-bottom:1rem;">
+  <a href="{% url 'panel_corrections_l1' %}?scope={{ scope.key }}" class="{% if corrections_tab == 'l1' %}active{% endif %}">{% trans "L1 Перезапись" %}</a>
+  <a href="{% url 'panel_corrections_l2' %}?scope={{ scope.key }}" class="{% if corrections_tab == 'l2' %}active{% endif %}">{% trans "L2 Объекты" %}</a>
+  <a href="{% url 'panel_corrections_l3' %}?scope={{ scope.key }}" class="{% if corrections_tab == 'l3' %}active{% endif %}">{% trans "L3 Неоднозначности" %}</a>
+</nav>
+{% if messages %}
+  <ul class="panel-messages">
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}

@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from apps.panel.corrections import admin as corrections_admin
+
+_ = corrections_admin
+_ = admin
