@@ -81,6 +81,20 @@ default = ""
 label = { ru = "ID ресурсов", en = "Resource IDs" }
 description = { ru = "Необязательный список ID ресурсов через запятую.", en = "Optional comma-separated resource ids." }
 
+[["panel.tasks.import_saved_timetables".parameters]]
+name = "use_corrections"
+type = "str"
+default = ""
+label = { ru = "Использовать корректировки L1–L3", en = "Use L1–L3 corrections" }
+description = { ru = "Пусто — взять IMPORT_USE_CORRECTIONS из env. 1/true — включить, 0/false — выключить.", en = "Empty uses IMPORT_USE_CORRECTIONS from env. 1/true enables, 0/false disables." }
+
+[["panel.tasks.import_saved_timetables".parameters]]
+name = "corrections_strict"
+type = "str"
+default = ""
+label = { ru = "Строгий режим корректировок", en = "Strict corrections mode" }
+description = { ru = "Пусто — IMPORT_CORRECTIONS_STRICT из env. 1 — не создавать сущности при неоднозначности.", en = "Empty uses IMPORT_CORRECTIONS_STRICT from env. 1 skips unresolved entities." }
+
 ["panel.tasks.clear_storage"]
 concurrency = "exclusive"
 name = { ru = "Очистка хранилища", en = "Storage cleanup" }

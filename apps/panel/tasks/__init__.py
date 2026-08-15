@@ -116,6 +116,22 @@ def update_timetable(self: Any) -> dict[str, str]:
         raise self.retry(exc=exc, countdown=60) from exc
 
 
+def _optional_flag(value: Any) -> bool | None:
+    """Пустая строка / None → из env; иначе bool."""
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    text = str(value).strip().lower()
+    if text == "":
+        return None
+    if text in ("1", "true", "yes", "on"):
+        return True
+    if text in ("0", "false", "no", "off"):
+        return False
+    raise ValueError(f"Invalid flag value: {value!r}")
+
+
 @project_task(name="panel.tasks.import_saved_timetables", max_retries=0)
 def import_saved_timetables(
     self: Any,
@@ -127,11 +143,17 @@ def import_saved_timetables(
     changed_only: bool = True,
     save_archive_schedules: bool = True,
     resource_ids: str = "",
+    use_corrections: Any = None,
+    corrections_strict: Any = None,
 ) -> dict[str, Any]:
     logger.info("Task started: import_saved_timetables [id=%s]", self.request.id)
     from apps.common.services.timetable.parse import (
         TimetableImportContext,
         run_saved_timetable_import_pipeline,
+    )
+    from apps.panel.services.corrections.import_flags import (
+        build_import_resolver,
+        resolve_import_flags,
     )
 
     def format_date(value: Any) -> str:
@@ -144,6 +166,11 @@ def import_saved_timetables(
     selected_resource_ids = [
         int(value.strip()) for value in resource_ids.split(",") if value.strip()
     ]
+    enabled, strict = resolve_import_flags(
+        use_corrections=_optional_flag(use_corrections),
+        corrections_strict=_optional_flag(corrections_strict),
+    )
+    resolver = build_import_resolver(use_corrections=enabled, seed=enabled)
     result = run_saved_timetable_import_pipeline(
         TimetableImportContext(
             academic_year=academic_year,
@@ -155,6 +182,9 @@ def import_saved_timetables(
         changed_only=changed_only,
         save_archive_schedules=save_archive_schedules,
         resource_ids=selected_resource_ids or None,
+        resolver=resolver,
+        corrections_strict=strict,
+        use_corrections=enabled,
     )
     logger.info("Task import_saved_timetables completed: %s", result.as_dict())
     return result.as_dict()

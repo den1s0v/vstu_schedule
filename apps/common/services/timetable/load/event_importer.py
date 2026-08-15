@@ -1,7 +1,8 @@
 import json
+import logging
 import re
 from datetime import date, datetime, timedelta
-from typing import cast
+from typing import Any, cast
 
 from django.db.models import Q
 
@@ -16,6 +17,12 @@ from apps.common.models import (
     TimeSlot,
 )
 from apps.common.selectors import Selector
+from apps.common.services.timetable.load.resolution import (
+    EntityResolver,
+    EntityType,
+    ResolutionReport,
+    ResolvedHit,
+)
 from apps.common.services.timetable.read.filters import TimeSlotFilter
 from apps.common.services.timetable.utilities import (
     get_number_from_month_name,
@@ -38,26 +45,50 @@ from apps.common.services.timetable.write.factories import (
     fill_semester_for_dates,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class EventImporter:
     @classmethod
-    def import_events(cls, event_data: str):
+    def import_events(
+        cls,
+        event_data: str,
+        *,
+        resolver: EntityResolver | None = None,
+        corrections_strict: bool = False,
+        resolution_report: ResolutionReport | None = None,
+    ):
         """Import AbstractEvents and Events from given data"""
 
         json_data = json.loads(event_data)
 
-        cls.make_import(
+        return cls.make_import(
             json_data["title"],
             json_data["table"]["grid"],
             json_data["table"]["datetime"]["weeks"],
             json_data["table"]["datetime"]["week_days"],
             json_data["table"]["datetime"]["months"],
+            resolver=resolver,
+            corrections_strict=corrections_strict,
+            resolution_report=resolution_report,
         )
 
     @classmethod
-    def make_import(cls, title: str, entries, weeks, week_days: list[str], months: list[str]):
+    def make_import(
+        cls,
+        title: str,
+        entries,
+        weeks,
+        week_days: list[str],
+        months: list[str],
+        *,
+        resolver: EntityResolver | None = None,
+        corrections_strict: bool = False,
+        resolution_report: ResolutionReport | None = None,
+    ):
         """Applies data on database"""
 
+        report = resolution_report if resolution_report is not None else ResolutionReport()
         schedule = cls.find_schedule(replace_roman_with_arabic_numerals(title))
         reference_lookup = {
             "subjects": {},
@@ -69,6 +100,18 @@ class EventImporter:
 
         for entry in entries:
             cls.correct_event_data(schedule, entry)
+
+            if resolver is not None:
+                ok = cls.apply_entity_resolution(
+                    entry,
+                    resolver=resolver,
+                    corrections_strict=corrections_strict,
+                    report=report,
+                    reference_lookup=reference_lookup,
+                    context={"schedule_title": title},
+                )
+                if not ok:
+                    continue
 
             reference_data = cls.collect_reference_data(entry)
 
@@ -82,6 +125,146 @@ class EventImporter:
             cls.create_events(
                 schedule, *cls.parse_data(entry, calendar, week_days, reference_lookup)
             )
+
+        return report
+
+    @classmethod
+    def apply_entity_resolution(
+        cls,
+        event_data: dict[str, Any],
+        *,
+        resolver: EntityResolver,
+        corrections_strict: bool,
+        report: ResolutionReport,
+        reference_lookup: dict[str, Any],
+        context: dict[str, Any] | None = None,
+    ) -> bool:
+        """Прогнать teacher/group/subject/place через resolver.
+
+        При hit переписывает строки в event_data на canonical и кладёт ORM в lookup.
+        При miss + strict — False (пропустить занятие).
+        При miss + не strict — оставляет строки для старого exact-create (fallback).
+        """
+        ctx = context or {}
+
+        subject_raw = event_data.get("subject") or ""
+        subject_hit = cls._resolve_one(
+            subject_raw,
+            "subject",
+            resolver=resolver,
+            corrections_strict=corrections_strict,
+            report=report,
+            context=ctx,
+        )
+        if subject_hit is False:
+            return False
+        if isinstance(subject_hit, ResolvedHit):
+            event_data["subject"] = subject_hit.canonical_value
+            cls._put_hit_in_lookup(subject_hit, reference_lookup)
+
+        participants = event_data.setdefault("participants", {})
+        teachers = list(participants.get("teachers") or [])
+        resolved_teachers: list[str] = []
+        for raw in teachers:
+            hit = cls._resolve_one(
+                raw,
+                "teacher",
+                resolver=resolver,
+                corrections_strict=corrections_strict,
+                report=report,
+                context=ctx,
+            )
+            if hit is False:
+                return False
+            if isinstance(hit, ResolvedHit):
+                resolved_teachers.append(hit.canonical_value)
+                cls._put_hit_in_lookup(hit, reference_lookup)
+            else:
+                resolved_teachers.append(raw)
+        participants["teachers"] = resolved_teachers
+
+        groups = list(participants.get("student_groups") or [])
+        resolved_groups: list[str] = []
+        for raw in groups:
+            hit = cls._resolve_one(
+                raw,
+                "group",
+                resolver=resolver,
+                corrections_strict=corrections_strict,
+                report=report,
+                context=ctx,
+            )
+            if hit is False:
+                return False
+            if isinstance(hit, ResolvedHit):
+                resolved_groups.append(hit.canonical_value)
+                cls._put_hit_in_lookup(hit, reference_lookup)
+            else:
+                resolved_groups.append(raw)
+        participants["student_groups"] = resolved_groups
+
+        places = list(event_data.get("places") or [])
+        resolved_places: list[str] = []
+        for raw in places:
+            hit = cls._resolve_one(
+                raw,
+                "place",
+                resolver=resolver,
+                corrections_strict=corrections_strict,
+                report=report,
+                context=ctx,
+            )
+            if hit is False:
+                return False
+            if isinstance(hit, ResolvedHit):
+                resolved_places.append(hit.canonical_value)
+                cls._put_hit_in_lookup(hit, reference_lookup)
+            else:
+                resolved_places.append(raw)
+        event_data["places"] = resolved_places
+        return True
+
+    @staticmethod
+    def _resolve_one(
+        value: str,
+        entity_type: EntityType,
+        *,
+        resolver: EntityResolver,
+        corrections_strict: bool,
+        report: ResolutionReport,
+        context: dict[str, Any],
+    ) -> ResolvedHit | None | bool:
+        """ResolvedHit | None (fallback) | False (skip entry)."""
+        raw = (value or "").strip()
+        if not raw:
+            return None
+        hit = resolver.resolve(raw, entity_type, context=context)
+        if hit is not None:
+            report.note_resolved(raw, hit)
+            return hit
+        report.note_ambiguous(raw, entity_type)
+        if corrections_strict:
+            report.note_skipped(raw, entity_type)
+            return False
+        report.note_fallback(raw, entity_type)
+        return None
+
+    @staticmethod
+    def _put_hit_in_lookup(hit: ResolvedHit, reference_lookup: dict[str, Any]) -> None:
+        if hit.model_label == "common.subject":
+            obj = Subject.objects.filter(pk=hit.pk).first()
+            if obj is not None:
+                reference_lookup["subjects"][obj.name] = obj
+        elif hit.model_label == "common.eventparticipant":
+            obj = EventParticipant.objects.filter(pk=hit.pk).first()
+            if obj is not None:
+                reference_lookup["participants"][obj.name] = obj
+        elif hit.model_label == "common.eventplace":
+            obj = EventPlace.objects.filter(pk=hit.pk).first()
+            if obj is not None:
+                reference_lookup["places"][(obj.building, obj.room)] = obj
+                # parse_data нормализует place-строку; канон должен разбираться
+                # в тот же (building, room).
 
     @classmethod
     def correct_event_data(cls, schedule: Schedule, event_data) -> None:

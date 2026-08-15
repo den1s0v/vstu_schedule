@@ -44,6 +44,9 @@ def run_saved_timetable_import_pipeline(
     changed_only: bool = True,
     save_archive_schedules: bool = True,
     resource_ids: list[int] | None = None,
+    resolver: Any | None = None,
+    corrections_strict: bool = False,
+    use_corrections: bool = False,
 ) -> TimetablePipelineResult:
     versions = _select_file_versions(changed_only=changed_only, resource_ids=resource_ids)
     imported = failed = skipped = 0
@@ -68,12 +71,26 @@ def run_saved_timetable_import_pipeline(
                     json.dumps([parsed.schedule_metadata], ensure_ascii=False),
                     save_archive_schedules,
                 )
-                EventImporter.import_events(json.dumps(parsed.event_payload, ensure_ascii=False))
+                resolution_report = EventImporter.import_events(
+                    json.dumps(parsed.event_payload, ensure_ascii=False),
+                    resolver=resolver,
+                    corrections_strict=corrections_strict,
+                )
+                result_payload: dict[str, Any] = {
+                    "title": parsed.title,
+                    "path": str(file_path),
+                    "use_corrections": use_corrections,
+                    "corrections_strict": corrections_strict,
+                }
+                if use_corrections and resolution_report is not None:
+                    as_dict = getattr(resolution_report, "as_dict", None)
+                    if callable(as_dict):
+                        result_payload["resolution"] = as_dict()
                 _finish_import(
                     import_record,
                     TimetableFileImport.Status.IMPORTED,
                     metadata=parsed.schedule_metadata,
-                    result={"title": parsed.title, "path": str(file_path)},
+                    result=result_payload,
                 )
             imported += 1
         except Exception as exc:

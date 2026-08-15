@@ -10,10 +10,15 @@ from apps.panel.services.corrections.links import approve_link, forbid_link, rem
 from apps.panel.services.corrections.matching import match_variant, similarity
 from apps.panel.services.corrections.pipeline import run_pipeline
 from apps.panel.services.corrections.rewrite import apply_rewrite
+from apps.panel.services.corrections.timetable import (
+    CorrectionsEntityResolver,
+    seed_dictionary_from_orm,
+)
 from apps.panel.services.corrections.usage import fingerprint_text, record_usage, usage_totals
 
 __all__ = [
     "DICTIONARY_SCHEMA",
+    "CorrectionsEntityResolver",
     "apply_rewrite",
     "approve_link",
     "fingerprint_text",
@@ -24,6 +29,7 @@ __all__ = [
     "record_usage",
     "remove_link",
     "run_pipeline",
+    "seed_dictionary_from_orm",
     "similarity",
     "usage_totals",
     "validate_dictionary_payload",

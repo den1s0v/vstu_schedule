@@ -269,3 +269,7 @@ LOGGING = {
 
 LOGIN_URL = "/panel/login/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Import entity corrections (L1/L2/L3). Explicit pipeline args override these.
+IMPORT_USE_CORRECTIONS = dotenv.get_bool("IMPORT_USE_CORRECTIONS", default=False)
+IMPORT_CORRECTIONS_STRICT = dotenv.get_bool("IMPORT_CORRECTIONS_STRICT", default=False)

@@ -125,6 +125,50 @@ class TimetableFileImportAdmin(admin.ModelAdmin):
     )
     list_filter = ("status", "started_at", "finished_at")
     readonly_fields = ("started_at",)
+    actions = ("reimport_with_corrections",)
+
+    @admin.action(description="Повторить импорт с корректировками L1–L3")
+    def reimport_with_corrections(self, request, queryset):
+        from apps.common.services.timetable.parse import (
+            TimetableImportContext,
+            run_saved_timetable_import_pipeline,
+        )
+        from apps.panel.services.corrections.import_flags import build_import_resolver
+
+        done = 0
+        for record in queryset.select_related("file_version"):
+            meta = record.metadata or {}
+            years = meta.get("years")
+            semester = meta.get("semester")
+            start_date = meta.get("start_date")
+            end_date = meta.get("end_date")
+            if not years or semester is None or not start_date or not end_date:
+                messages.warning(
+                    request,
+                    f"Импорт #{record.pk}: нет metadata для контекста семестра, пропуск.",
+                )
+                continue
+            resolver = build_import_resolver(use_corrections=True, seed=True)
+            run_saved_timetable_import_pipeline(
+                TimetableImportContext(
+                    academic_year=str(years),
+                    semester=int(semester),
+                    semester_start_date=str(start_date),
+                    semester_end_date=str(end_date),
+                    starting_day_number=int(meta.get("starting_day_number") or 0),
+                ),
+                changed_only=False,
+                resource_ids=[record.file_version.resource_id],
+                resolver=resolver,
+                corrections_strict=False,
+                use_corrections=True,
+            )
+            done += 1
+        messages.success(request, f"Повторный импорт с корректировками: {done}")
+        messages.info(
+            request,
+            "Открытые неоднозначности: /panel/corrections/l3/",
+        )
 
 
 @admin.register(Setting)
@@ -137,6 +181,21 @@ class SettingAdmin(admin.ModelAdmin):
 class SubjectAdmin(BaseAdmin):
     list_display = ("name",)
     search_fields = ("name",)
+    actions = ("seed_corrections_dictionary",)
+
+    @admin.action(description="В словарь корректировок")
+    def seed_corrections_dictionary(self, request, queryset):
+        from apps.panel.services.corrections.timetable import seed_dictionary_from_orm
+
+        stats = seed_dictionary_from_orm(
+            entity_types=("subject",),
+            pks={"subject": queryset.values_list("pk", flat=True)},
+            actor=request.user,
+        )
+        messages.success(
+            request,
+            f"Словарь subject: создано {stats['created']}, обновлено {stats['updated']}.",
+        )
 
 
 @admin.register(EventParticipant)
@@ -144,6 +203,43 @@ class EventParticipantAdmin(BaseAdmin):
     list_display = ("name", "role")
     search_fields = ("name", "role")
     list_filter = ("role",)
+    actions = ("seed_corrections_dictionary",)
+
+    @admin.action(description="В словарь корректировок")
+    def seed_corrections_dictionary(self, request, queryset):
+        from apps.panel.services.corrections.timetable import seed_dictionary_from_orm
+
+        teacher_pks = list(
+            queryset.filter(role=EventParticipant.Role.TEACHER, is_group=False).values_list(
+                "pk", flat=True
+            )
+        )
+        group_pks = list(
+            queryset.filter(role=EventParticipant.Role.STUDENT, is_group=True).values_list(
+                "pk", flat=True
+            )
+        )
+        stats = {"created": 0, "updated": 0, "aliases_linked": 0}
+        if teacher_pks:
+            part = seed_dictionary_from_orm(
+                entity_types=("teacher",),
+                pks={"teacher": teacher_pks},
+                actor=request.user,
+            )
+            for k in stats:
+                stats[k] += part.get(k, 0)
+        if group_pks:
+            part = seed_dictionary_from_orm(
+                entity_types=("group",),
+                pks={"group": group_pks},
+                actor=request.user,
+            )
+            for k in stats:
+                stats[k] += part.get(k, 0)
+        messages.success(
+            request,
+            f"Словарь участников: создано {stats['created']}, обновлено {stats['updated']}.",
+        )
 
 
 @admin.register(EventPlace)
@@ -151,6 +247,21 @@ class EventPlaceAdmin(BaseAdmin):
     list_display = ("building", "room")
     search_fields = ("building", "room")
     list_filter = ("building",)
+    actions = ("seed_corrections_dictionary",)
+
+    @admin.action(description="В словарь корректировок")
+    def seed_corrections_dictionary(self, request, queryset):
+        from apps.panel.services.corrections.timetable import seed_dictionary_from_orm
+
+        stats = seed_dictionary_from_orm(
+            entity_types=("place",),
+            pks={"place": queryset.values_list("pk", flat=True)},
+            actor=request.user,
+        )
+        messages.success(
+            request,
+            f"Словарь place: создано {stats['created']}, обновлено {stats['updated']}.",
+        )
 
 
 @admin.register(EventKind)
@@ -364,7 +475,7 @@ class AbstractEventAdmin(BaseAdmin):
     )
     list_filter = ("kind__name",)
 
-    actions = ("delete_events", "fill", "check_fields")
+    actions = ("delete_events", "fill", "check_fields", "rebind_via_corrections")
 
     @admin.action(description="Удалить связанные события")
     def delete_events(modeladmin, request, queryset):
@@ -398,6 +509,21 @@ class AbstractEventAdmin(BaseAdmin):
 
         if not is_any_warning_shown:
             messages.success(request, "В выбранных запланированных событиях накладки не найдены")
+
+    @admin.action(description="Перепривязать через L1–L2 (только однозначные)")
+    def rebind_via_corrections(self, request, queryset):
+        from apps.panel.services.corrections.timetable import rebind_abstract_event_entities
+
+        changed = 0
+        unresolved = 0
+        for ae in queryset.prefetch_related("participants", "places").select_related("subject"):
+            preview = rebind_abstract_event_entities(ae, apply=True)
+            if preview["changes"]:
+                changed += 1
+            unresolved += len(preview["unresolved"])
+        messages.success(request, f"Обновлено событий: {changed}. Неоднозначных полей: {unresolved}.")
+        if unresolved:
+            messages.info(request, "Очередь L3: /panel/corrections/l3/")
 
 
 @admin.register(AbstractDay)

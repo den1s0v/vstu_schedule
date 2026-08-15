@@ -138,24 +138,46 @@ def get_panel_action(action_id: str) -> PanelAction:
         raise ValueError(f"Unknown panel action: {action_id}") from exc
 
 
-def run_panel_action(action_id: str, *, upload_path: str = "", mode: str = "") -> str:
+def run_panel_action(
+    action_id: str,
+    *,
+    upload_path: str = "",
+    mode: str = "",
+    use_corrections: bool | None = None,
+    corrections_strict: bool | None = None,
+) -> str:
+    from apps.panel.services.corrections.import_flags import (
+        build_import_resolver,
+        resolve_import_flags,
+    )
+    from apps.panel.services.corrections.timetable import seed_dictionary_from_orm
+
     action = get_panel_action(action_id)
     if action.kind == "file" and not upload_path:
         raise ValueError(f"Action {action_id!r} requires an uploaded file.")
+
+    enabled, strict = resolve_import_flags(
+        use_corrections=use_corrections,
+        corrections_strict=corrections_strict,
+    )
 
     message: str
     match action_id:
         case "import_subject_reference":
             ReferenceImporter.import_subject_reference(_read_upload(upload_path))
+            seed_dictionary_from_orm(entity_types=("subject",))
             message = "Справочник дисциплин импортирован."
         case "import_teacher_reference":
             ReferenceImporter.import_teacher_reference(_read_upload(upload_path))
+            seed_dictionary_from_orm(entity_types=("teacher",))
             message = "Справочник преподавателей импортирован."
         case "import_student_reference":
             ReferenceImporter.import_student_reference(_read_upload(upload_path))
+            seed_dictionary_from_orm(entity_types=("group",))
             message = "Справочник групп импортирован."
         case "import_place_reference":
             ReferenceImporter.import_place_reference(_read_upload(upload_path))
+            seed_dictionary_from_orm(entity_types=("place",))
             message = "Справочник аудиторий импортирован."
         case "import_faculty_reference":
             ReferenceImporter.import_faculty_reference(_read_upload(upload_path))
@@ -169,7 +191,12 @@ def run_panel_action(action_id: str, *, upload_path: str = "", mode: str = "") -
             ReferenceImporter.import_schedule(_read_upload(upload_path), mode == "common")
             message = "Расписание импортировано."
         case "import_events":
-            EventImporter.import_events(_read_upload(upload_path))
+            resolver = build_import_resolver(use_corrections=enabled, seed=enabled)
+            EventImporter.import_events(
+                _read_upload(upload_path),
+                resolver=resolver,
+                corrections_strict=strict,
+            )
             message = "Занятия импортированы."
         case "create_abstract_days":
             create_common_abstract_days()

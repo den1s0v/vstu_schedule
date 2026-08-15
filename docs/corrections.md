@@ -58,3 +58,35 @@ class CandidateResolver(Protocol):
 - сервисы: `apps/panel/services/corrections/`
 - UI: `apps/panel/views/corrections/`, шаблоны `panel/corrections/`
 - документация этой архитектуры: этот файл
+
+## Врезка в импорт расписания
+
+Слой подключается **параллельно** старому exact-lookup. `apps.common` знает только
+протокол `EntityResolver` (`apps/common/services/timetable/load/resolution.py`).
+Реализация `CorrectionsEntityResolver` живёт в
+`apps/panel/services/corrections/timetable.py` и инжектится из panel-задач/actions.
+
+### Связь CorrectObject ↔ ORM
+
+| entity_type | ORM | `external_id` |
+|-------------|-----|---------------|
+| `subject` | `Subject` | `common.subject:<pk>` |
+| `teacher` / `group` | `EventParticipant` | `common.eventparticipant:<pk>` |
+| `place` | `EventPlace` | `common.eventplace:<pk>` |
+
+Справочники сидируются через `seed_dictionary_from_orm` после import_* reference
+и кнопкой admin «В словарь корректировок».
+
+### Флаги (env / `.env.example`)
+
+- `IMPORT_USE_CORRECTIONS` — включить L1→L2→L3 для строк teacher/group/subject/place.
+- `IMPORT_CORRECTIONS_STRICT` — при отсутствии однозначного hit не создавать ORM и
+  пропустить занятие (иначе fallback на старый exact-create). Имеет смысл только
+  при включённых корректировках.
+
+Явные аргументы `use_corrections` / `corrections_strict` на Celery-задаче
+`import_saved_timetables`, panel `import_events` и admin «Повторить импорт…»
+побеждают env (`""` / `None` → env).
+
+Даты, `EventKind`, `TimeSlot`, `find_schedule` и хаки Excel/`holds_on_date`
+через corrections пока не проходят.
