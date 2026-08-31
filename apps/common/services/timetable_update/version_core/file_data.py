@@ -78,10 +78,6 @@ class FileData:
         for part in path_parts:
             if part.startswith("Курс"):
                 abbr = "К" + part.split()[-1]
-            elif self.__is_mostly_uppercase(part):
-                # Аббревиатуры вроде "ФЭВТ" или "ИВТ и ПО" сокращать нельзя:
-                # они и так короткие, а сокращение схлопывает разные подразделения в одну букву.
-                abbr = "_".join(part.split())
             else:
                 words = [w for w in part.split() if len(w) > 2]
                 abbr = "".join(w[0].upper() for w in words)
@@ -91,11 +87,25 @@ class FileData:
     def get_resource(self, type_timetable: str) -> Resource:
         """Создаёт и возвращает несохранённый объект Resource для БД."""
         resource = Resource()
-        resource.path = self.get_correct_path()
+        resource.path = self.get_correct_resource_path()
         resource.name = self.get_name()
         resource.add_tags(*self._get_tags(type_timetable))
         resource.deprecated = False
         return resource
+
+    def get_correct_resource_path(self) -> str:
+        """Абревиатурный путь + подпапка с исходным именем файла."""
+        base_path = self.get_correct_path()
+        slug = self._slugify_original_name(self.__correct_name_from_path)
+        return f"{base_path}/{slug}" if base_path else slug
+
+    @staticmethod
+    def _slugify_original_name(name: str) -> str:
+        """Делает исходное имя файла безопасным для использования как имя каталога."""
+        slug = re.sub(r"\s+", "_", name.strip())
+        slug = re.sub(r"[^\w.-]+", "_", slug, flags=re.UNICODE)
+        slug = slug.strip("_.")
+        return slug[:120] or "Файл"
 
     def get_file_version(self, file_path: Path | str) -> FileVersion:
         """
