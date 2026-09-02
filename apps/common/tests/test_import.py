@@ -1242,7 +1242,7 @@ class TestEventImporter(TestCase):
                     }
                 ]
             """
-        
+
         ReferenceImporter.import_schedule(SCHEDULE_TEST_REFERENCE_DATA, True)
 
         schedule = Schedule.objects.get(
@@ -1263,7 +1263,7 @@ class TestEventImporter(TestCase):
                 Event.objects.filter(
                     subject_override__name="ФИЛОСОФИЯ И МЕТОДОЛОГИЯ НАУКИ",
                     participants_override__name__in=["ПОАС-2.1", "ПОАС-2.2"],
-                    date=datetime.strptime("11.09.2026", "%d.%m.%Y").date()
+                    date=datetime.strptime("11.09.2026", "%d.%m.%Y").date(),
                 ).count(),
                 0,
             )
