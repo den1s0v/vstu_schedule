@@ -1255,7 +1255,7 @@ class TestEventImporter(TestCase):
         schedule.starting_day_number = AbstractDay.objects.get(day_number=1)
         schedule.save()
 
-        with open("apps/common/tests/data/test_import_2.json", "r", encoding="utf8") as data_file:
+        with open("apps/common/tests/data/test_import_2.json", encoding="utf8") as data_file:
             EventImporter.import_events(data_file.read())
 
         try:
