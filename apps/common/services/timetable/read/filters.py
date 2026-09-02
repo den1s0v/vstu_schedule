@@ -415,28 +415,6 @@ class AbstractEventFilter:
             .distinct()
         }
 
-    @staticmethod
-    def is_already_exist(
-        kind: EventKind,
-        subject: Subject,
-        participants: list[EventParticipant],
-        places: list[EventPlace],
-        abstract_day: AbstractDay,
-        time_slot: TimeSlot,
-        date_: date | None,
-        schedule: Schedule,
-    ):
-        return {
-            "kind": kind,
-            "subject": subject,
-            "participants__in": participants,
-            "places__in": places,
-            "abstract_day": abstract_day,
-            "time_slot": time_slot,
-            "holds_on_date": date_,
-            "schedule": schedule,
-        }
-
 
 class ScheduleFilter:
     """Only for work with Event model fields"""
