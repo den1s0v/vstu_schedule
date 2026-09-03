@@ -1221,6 +1221,55 @@ class TestEventImporter(TestCase):
         except AbstractEvent.DoesNotExist:
             self.fail()
 
+    def test_import_almost_similar_events(self):
+        """Тест проверяет возникшую ранее ошибку,
+        когда проверка на существование (защита от дублирования) событий
+        некорректно сравнивала "участников" и "места" лишь по одному вхождению
+        """
+
+        SCHEDULE_TEST_REFERENCE_DATA = """
+                [
+                    {
+                        "course": "2",
+                        "schedule_template_metadata_faculty_shortname": "ФЭВТ",
+                        "semester": "1",
+                        "years": "2026-2027",
+                        "start_date": "01.09.2026",
+                        "end_date": "01.02.2027",
+                        "scope": "магистратура",
+                        "department_shortname": "ФЭВТ",
+                        "original_title": "Учебные занятия 2 курса магистратура ФЭВТ на I семестр 2026-2027 учебного года"
+                    }
+                ]
+            """
+
+        ReferenceImporter.import_schedule(SCHEDULE_TEST_REFERENCE_DATA, True)
+
+        schedule = Schedule.objects.get(
+            schedule_template__metadata__faculty="ФЭВТ",
+            schedule_template__metadata__scope=ScheduleTemplateMetadata.Scope.MASTER,
+            metadata__years="2026-2027",
+            metadata__course=2,
+            metadata__semester=1,
+        )
+        schedule.starting_day_number = AbstractDay.objects.get(day_number=1)
+        schedule.save()
+
+        with open("apps/common/tests/data/test_import_2.json", encoding="utf8") as data_file:
+            EventImporter.import_events(data_file.read())
+
+        try:
+            self.assertNotEqual(
+                Event.objects.filter(
+                    subject_override__name="ФИЛОСОФИЯ И МЕТОДОЛОГИЯ НАУКИ",
+                    participants_override__name__in=["ПОАС-2.1", "ПОАС-2.2"],
+                    date=datetime.strptime("11.09.2026", "%d.%m.%Y").date(),
+                ).count(),
+                0,
+            )
+        except Event.DoesNotExist:
+            self.fail()
+
     # test_import_event_for_not_existing_time_slot
 
 

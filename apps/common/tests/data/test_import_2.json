@@ -1,0 +1,738 @@
+{
+	"title": "Учебные занятия 2 курса магистратура ФЭВТ на I семестр 2026-2027 учебного года",
+	"table": {
+		"grid": [
+			{
+				"subject": "НЕЙРОННЫЕ СИСТЕМЫ ОБРАБОТКИ ИНФОРМАЦИИ",
+				"kind": "лекция",
+				"participants": {
+					"teachers": [
+						"доц. Макартичян С.В."
+					],
+					"student_groups": [
+						"ЭТ-2"
+					]
+				},
+				"places": [
+					"А 407б"
+				],
+				"hours": [
+					"7-8",
+					"9-10"
+				],
+				"week_day_index": 0,
+				"week": "first_week",
+				"holds_on_date": [
+					"14.09.2026",
+					"12.10.2026",
+					"28.09.2026",
+					"26.10.2026",
+					"09.11.2026",
+					"07.12.2026",
+					"23.11.2026",
+					"21.12.2026"
+				]
+			},
+			{
+				"subject": "НЕЙРОННЫЕ СИСТЕМЫ ОБРАБОТКИ ИНФОРМАЦИИ",
+				"kind": "лекция",
+				"participants": {
+					"teachers": [
+						"доц. Макартичян С.В."
+					],
+					"student_groups": [
+						"ЭТ-2"
+					]
+				},
+				"places": [
+					"А 407б"
+				],
+				"hours": [
+					"7-8",
+					"9-10"
+				],
+				"week_day_index": 0,
+				"week": "first_week",
+				"holds_on_date": [
+					"14.09.2026",
+					"12.10.2026",
+					"28.09.2026",
+					"26.10.2026",
+					"09.11.2026",
+					"07.12.2026",
+					"23.11.2026",
+					"21.12.2026"
+				]
+			},
+			{
+				"subject": "ФИЗИЧЕСКАЯ ЭЛЕКТРОНИКА",
+				"kind": "лекция",
+				"participants": {
+					"teachers": [
+						"доц. Ковтун Д.Г."
+					],
+					"student_groups": [
+						"Ф-2"
+					]
+				},
+				"places": [
+					"Т 202"
+				],
+				"hours": [
+					"5-6",
+					"7-8"
+				],
+				"week_day_index": 2,
+				"week": "first_week",
+				"holds_on_date": [
+					"16.09.2026",
+					"14.10.2026",
+					"11.11.2026",
+					"09.12.2026"
+				]
+			},
+			{
+				"subject": "МОБИЛЬНЫЕ И СЕТЕВЫЕ АРХИТЕКТУРЫ КОМПЛ.СИСТЕМ ИСКУССТВЕННОГО ИНТЕЛЛЕКТА",
+				"kind": "лекция",
+				"participants": {
+					"teachers": [
+						"доц. Андреев А.Е."
+					],
+					"student_groups": [
+						"ЭВМ-2.2",
+						"ЭВМ-2.3",
+						"САПР-2.1",
+						"САПР-2.3",
+						"САПР-2.4"
+					]
+				},
+				"places": [
+					"В 502"
+				],
+				"hours": [
+					"9-10",
+					"11-12"
+				],
+				"week_day_index": 1,
+				"week": "second_week",
+				"holds_on_date": []
+			},
+			{
+				"subject": "ИНФОРМАЦИОННО-КОММУНИКАЦИОННЫЕ ТЕХНОЛОГИИ",
+				"kind": "лекция",
+				"participants": {
+					"teachers": [
+						"доц. Королева И.Ю."
+					],
+					"student_groups": [
+						"ПОАС-2.1",
+						"ПОАС-2.2",
+						"Ф-2",
+						"ЭТ-2"
+					]
+				},
+				"places": [
+					"В 502"
+				],
+				"hours": [
+					"9-10",
+					"11-12"
+				],
+				"week_day_index": 1,
+				"week": "second_week",
+				"holds_on_date": [
+					"08.09.2026",
+					"06.10.2026",
+					"03.11.2026",
+					"01.12.2026"
+				]
+			},
+			{
+				"subject": "ФИЛОСОФИЯ И МЕТОДОЛОГИЯ НАУКИ",
+				"kind": "лекция",
+				"participants": {
+					"teachers": [
+						"проф. Леонтьева Е.Ю."
+					],
+					"student_groups": [
+						"ЭВМ-2.2",
+						"ЭВМ-2.3",
+						"САПР-2.1",
+						"САПР-2.3",
+						"САПР-2.4"
+					]
+				},
+				"places": [
+					"В 502"
+				],
+				"hours": [
+					"1-2",
+					"3-4"
+				],
+				"week_day_index": 4,
+				"week": "second_week",
+				"holds_on_date": [
+					"11.09.2026",
+					"09.10.2026",
+					"06.11.2026",
+					"04.12.2026"
+				]
+			},
+			{
+				"subject": "ФИЛОСОФИЯ И МЕТОДОЛОГИЯ НАУКИ",
+				"kind": "лекция",
+				"participants": {
+					"teachers": [
+						"проф. Леонтьева Е.Ю.",
+						"проф. Леонтьева Е.Ю."
+					],
+					"student_groups": [
+						"ПОАС-2.1",
+						"ПОАС-2.2"
+					]
+				},
+				"places": [
+					"В 502"
+				],
+				"hours": [
+					"1-2",
+					"3-4"
+				],
+				"week_day_index": 4,
+				"week": "second_week",
+				"holds_on_date": [
+					"11.09.2026",
+					"09.10.2026",
+					"25.09.2026",
+					"23.10.2026",
+					"06.11.2026",
+					"04.12.2026",
+					"20.11.2026",
+					"18.12.2026"
+				]
+			},
+			{
+				"subject": "ФИЛОСОФИЯ И МЕТОДОЛОГИЯ НАУКИ",
+				"kind": "лекция",
+				"participants": {
+					"teachers": [
+						"проф. Леонтьева Е.Ю.",
+						"проф. Леонтьева Е.Ю."
+					],
+					"student_groups": [
+						"ПОАС-2.1",
+						"ПОАС-2.2"
+					]
+				},
+				"places": [
+					"В 502"
+				],
+				"hours": [
+					"1-2",
+					"3-4"
+				],
+				"week_day_index": 4,
+				"week": "second_week",
+				"holds_on_date": [
+					"11.09.2026",
+					"09.10.2026",
+					"25.09.2026",
+					"23.10.2026",
+					"06.11.2026",
+					"04.12.2026",
+					"20.11.2026",
+					"18.12.2026"
+				]
+			},
+			{
+				"subject": "ФИЛОСОФИЯ И МЕТОДОЛОГИЯ НАУКИ",
+				"kind": "лекция",
+				"participants": {
+					"teachers": [
+						"проф. Леонтьева Е.Ю.",
+						"проф. Леонтьева Е.Ю."
+					],
+					"student_groups": [
+						"ПОАС-2.1",
+						"ПОАС-2.2"
+					]
+				},
+				"places": [
+					"В 502"
+				],
+				"hours": [
+					"1-2",
+					"3-4"
+				],
+				"week_day_index": 4,
+				"week": "second_week",
+				"holds_on_date": [
+					"11.09.2026",
+					"09.10.2026",
+					"25.09.2026",
+					"23.10.2026",
+					"06.11.2026",
+					"04.12.2026",
+					"20.11.2026",
+					"18.12.2026"
+				]
+			},
+			{
+				"subject": "ФИЛОСОФИЯ И МЕТОДОЛОГИЯ НАУКИ",
+				"kind": "лекция",
+				"participants": {
+					"teachers": [
+						"проф. Леонтьева Е.Ю.",
+						"проф. Леонтьева Е.Ю."
+					],
+					"student_groups": [
+						"ПОАС-2.1",
+						"ПОАС-2.2"
+					]
+				},
+				"places": [
+					"В 502"
+				],
+				"hours": [
+					"1-2",
+					"3-4"
+				],
+				"week_day_index": 4,
+				"week": "second_week",
+				"holds_on_date": [
+					"11.09.2026",
+					"09.10.2026",
+					"25.09.2026",
+					"23.10.2026",
+					"06.11.2026",
+					"04.12.2026",
+					"20.11.2026",
+					"18.12.2026"
+				]
+			}
+		],
+		"datetime": {
+			"weeks": {
+				"first_week": [
+					{
+						"week_day_index": 0,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"14",
+									"28"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"12",
+									"26"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"9",
+									"23"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"7",
+									"21"
+								]
+							}
+						]
+					},
+					{
+						"week_day_index": 1,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"1",
+									"15",
+									"29"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"13",
+									"27"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"10",
+									"24"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"8",
+									"22"
+								]
+							}
+						]
+					},
+					{
+						"week_day_index": 2,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"2",
+									"16",
+									"30"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"14",
+									"28"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"11",
+									"25"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"9",
+									"23"
+								]
+							}
+						]
+					},
+					{
+						"week_day_index": 3,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"3",
+									"17"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"1",
+									"15",
+									"29"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"12",
+									"26"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"10",
+									"24"
+								]
+							}
+						]
+					},
+					{
+						"week_day_index": 4,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"4",
+									"18"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"2",
+									"16",
+									"30"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"13",
+									"27"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"11",
+									"25"
+								]
+							}
+						]
+					},
+					{
+						"week_day_index": 5,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"5",
+									"19"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"3",
+									"17",
+									"31"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"14",
+									"28"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"12",
+									"26"
+								]
+							}
+						]
+					}
+				],
+				"second_week": [
+					{
+						"week_day_index": 0,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"7",
+									"21"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"5",
+									"19"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"2",
+									"16",
+									"30"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"14"
+								]
+							}
+						]
+					},
+					{
+						"week_day_index": 1,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"8",
+									"22"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"6",
+									"20"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"3",
+									"17"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"1",
+									"15"
+								]
+							}
+						]
+					},
+					{
+						"week_day_index": 2,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"9",
+									"23"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"7",
+									"21"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"4",
+									"18"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"2",
+									"16"
+								]
+							}
+						]
+					},
+					{
+						"week_day_index": 3,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"10",
+									"24"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"8",
+									"22"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"5",
+									"19"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"3",
+									"17"
+								]
+							}
+						]
+					},
+					{
+						"week_day_index": 4,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"11",
+									"25"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"9",
+									"23"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"6",
+									"20"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"4",
+									"18"
+								]
+							}
+						]
+					},
+					{
+						"week_day_index": 5,
+						"calendar": [
+							{
+								"month_index": 0,
+								"month_days": [
+									"12",
+									"26"
+								]
+							},
+							{
+								"month_index": 1,
+								"month_days": [
+									"10",
+									"24"
+								]
+							},
+							{
+								"month_index": 2,
+								"month_days": [
+									"7",
+									"21"
+								]
+							},
+							{
+								"month_index": 3,
+								"month_days": [
+									"5",
+									"19"
+								]
+							}
+						]
+					}
+				]
+			},
+			"week_days": [
+				"ПОНЕДЕЛЬНИК",
+				"ВТОРНИК",
+				"СРЕДА",
+				"ЧЕТВЕРГ",
+				"ПЯТНИЦА",
+				"СУББОТА"
+			],
+			"months": [
+				"сентябрь",
+				"октябрь",
+				"ноябрь",
+				"декабрь"
+			]
+		}
+	}
+}

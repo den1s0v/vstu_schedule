@@ -1,6 +1,6 @@
 from datetime import date
 
-from django.db.models import QuerySet
+from django.db.models import Count, QuerySet
 
 from apps.common.models import (
     AbstractDay,
@@ -94,13 +94,37 @@ def is_abstract_event_already_exists(
     date_: date | None,
     schedule: Schedule,
 ) -> bool:
-    """Checks if AbstractEvent by given parameters already exists"""
+    """Checks if AbstractEvent by given parameters already exists
 
-    return AbstractEvent.objects.filter(
-        **AbstractEventFilter.is_already_exist(
-            kind, subject, participants, places, abstract_day, time_slot, date_, schedule
+    AbstractEvent must match in all participants and places
+    """
+
+    candidate_events = (
+        AbstractEvent.objects.filter(
+            kind=kind,
+            subject=subject,
+            abstract_day=abstract_day,
+            time_slot=time_slot,
+            holds_on_date=date_,
+            schedule=schedule,
         )
-    ).exists()
+        .annotate(
+            prt_count=Count("participants", distinct=True),
+            plc_count=Count("places", distinct=True),
+        )
+        .filter(
+            prt_count=len(participants),
+            plc_count=len(places),
+        )
+    )
+
+    for participant in participants:
+        candidate_events = candidate_events.filter(participants=participant)
+
+    for place in places:
+        candidate_events = candidate_events.filter(places=place)
+
+    return candidate_events.exists()
 
 
 def is_place_already_exists(building: str, room: str) -> bool:
