@@ -209,27 +209,15 @@ def calculate_semester_filling_parameters(
 
     semester_start_date = abstract_event.schedule.start_date
 
-    # if semester starts from FIRST week
-    if abstract_event.schedule.starting_day_number.day_number < 7:
-        fill_from_date = semester_start_date + timedelta(abstract_event.abstract_day.day_number)
-    # otherwise when semester starts from SECOND week
-    else:
-        fill_from_date = semester_start_date + timedelta(abstract_event.abstract_day.day_number - 7)
+    day_number_difference = (
+        abstract_event.abstract_day.day_number
+        - abstract_event.schedule.starting_day_number.day_number
+    )
 
-    """
-    # finding first week monday date
+    fill_from_date = semester_start_date + timedelta(day_number_difference)
 
-    # if semester starts from FIRST week
-    # finding previous first week monday date
-    if abstract_event.schedule.starting_day_number.day_number < 7:
-        fill_from_date -= timedelta(abstract_event.schedule.starting_day_number.day_number)
-    # otherwise when semester starts from SECOND week
-    # finding next first week monday date
-    else:
-        fill_from_date += timedelta(14 - abstract_event.schedule.starting_day_number.day_number)
-    """
-    # adding abstract_event delta from first week monday
-    # fill_from_date += timedelta(abstract_event.abstract_day.day_number)
+    if day_number_difference < 0:
+        fill_from_date += timedelta(abstract_event.schedule.schedule_template.repetition_period)
 
     return (
         semester_start_date,
