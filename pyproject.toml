@@ -9,8 +9,8 @@ dependencies = [
     "openpyxl>=3.1.5",
     "requests>=2.32.0",
     "xls2xlsx>=0.2.0",
-    "celery>=5.6.3",
-    "django>=6.0.3,<6.1",
+    "celery[redis]>=5.6.3",
+    "django>=6.1,<6.2",
     "django-celery-beat>=2.9.0",
     "gunicorn>=23.0.0",
     "psycopg>=3.3.2",
@@ -21,7 +21,7 @@ dependencies = [
     "xlsxwriter>=3.2.9",
     "xxhash>=3.7.0",
     "rapidfuzz>=3.14.5",
-    "django-modern-rest[jwt,msgspec,openapi]>=0.10.0",
+    "django-modern-rest[jwt,msgspec,openapi]>=0.17.0",
     "icalendar>=7.1.2",
     "markdown-it-py>=4.2.0",
 ]
@@ -46,4 +46,5 @@ exclude = [
 ]
 
 [tool.uv.sources]
+django-celery-beat = { git = "https://github.com/celery/django-celery-beat.git", rev = "492719f67c9c886fd38a7ba7e9754c914bb7497f" }
 vstu-xls = { git = "https://github.com/den1s0v/vstu_xls.git", rev = "0.2.2-preview" }
