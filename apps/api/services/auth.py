@@ -6,12 +6,14 @@ import jwt
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils import timezone
-from dmr import APIError
+from dmr import APIError, Controller
 from dmr.errors import format_error
 from dmr.exceptions import NotAuthenticatedError
+from dmr.metadata import EndpointMetadata
 from dmr.openapi.objects import Reference, SecurityRequirement, SecurityScheme
 from dmr.security.base import SyncAuth
 from dmr.security.django_session import DjangoSessionSyncAuth
+from dmr.serializer import BaseSerializer
 
 from apps.api.models import ApiClient
 
@@ -76,7 +78,14 @@ def is_unlimited_request(request: HttpRequest) -> bool:
 
 class ApiClientTokenSyncAuth(SyncAuth):
     @property
-    def security_schemes(self) -> dict[str, SecurityScheme | Reference]:
+    def www_authenticate_challenge(self) -> str:
+        return "Bearer"
+
+    def security_schemes(
+        self,
+        metadata: EndpointMetadata,
+        controller_cls: type[Controller[BaseSerializer]],
+    ) -> dict[str, SecurityScheme | Reference]:
         return {
             "api_client_bearer": SecurityScheme(
                 type="http",
@@ -86,9 +95,12 @@ class ApiClientTokenSyncAuth(SyncAuth):
             )
         }
 
-    @property
-    def security_requirement(self) -> SecurityRequirement:
-        return {"api_client_bearer": []}
+    def security_requirements(
+        self,
+        metadata: EndpointMetadata,
+        controller_cls: type[Controller[BaseSerializer]],
+    ) -> list[SecurityRequirement]:
+        return [{"api_client_bearer": []}]
 
     def __call__(self, endpoint, controller):
         if authenticate_request_token(controller.request) is None:
