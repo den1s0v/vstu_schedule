@@ -1,9 +1,13 @@
 import base64
+import csv
+import io
 from datetime import date, time
 from http import HTTPStatus
 
 import pytest
+from django.test import Client
 from django.urls import reverse
+from icalendar import Calendar, vRecur
 
 from apps.api.models import ApiClient
 from apps.common.models import (
@@ -122,6 +126,71 @@ def test_export_schedule_ics_uses_recurring_event(client):
     assert f"UID:schedule-event-{event.abstract_event.pk}@vstu-schedule" in content
     assert "RRULE:FREQ=DAILY;COUNT=18;INTERVAL=7" in content
     assert "DTSTART;TZID=Europe/Volgograd:20260201T083000" in content
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("format_name", ["json", "csv", "ics"])
+@pytest.mark.parametrize(
+    ("starting_day", "event_day", "expected_first"),
+    [
+        (1, 4, date(2026, 9, 4)),
+        (1, 0, date(2026, 9, 14)),
+        (1, 11, date(2026, 9, 11)),
+        (8, 4, date(2026, 9, 11)),
+        (8, 11, date(2026, 9, 4)),
+        (13, 0, date(2026, 9, 2)),
+        (0, 4, date(2026, 9, 5)),
+    ],
+)
+def test_export_recurrence_matches_dated_events(
+    client: Client, format_name: str, starting_day: int, event_day: int, expected_first: date
+) -> None:
+    event = _create_event()
+    abstract_event = event.abstract_event
+    assert abstract_event is not None
+    schedule = abstract_event.schedule
+    assert schedule is not None
+    template = schedule.schedule_template
+    assert template is not None
+    template.repetition_period = 14
+    template.save()
+    abstract_event.abstract_day = AbstractDay.objects.create(
+        day_number=event_day, name=f"Cycle day {event_day}"
+    )
+    abstract_event.save()
+    schedule.start_date = date(2026, 9, 1)
+    schedule.end_date = date(2026, 9, 30)
+    schedule.starting_day_number = AbstractDay.objects.create(
+        day_number=starting_day, name=f"Starting day {starting_day}"
+    )
+    schedule.save()
+
+    dated_response = client.get(
+        reverse("api:export"),
+        {"date": "range_date", "left_date": "2026-09-01", "right_date": "2026-09-30"},
+    )
+    assert dated_response.status_code == HTTPStatus.OK
+    dates = sorted(item["date"] for item in dated_response.json()["events"])
+    assert dates[0] == expected_first.isoformat()
+
+    response = client.get(reverse("api:export"), {"format": format_name})
+    assert response.status_code == HTTPStatus.OK
+    if format_name == "json":
+        recurrence = response.json()["schedule_events"][0]["recurrence"]
+        assert recurrence["first_date"] == dates[0]
+        assert recurrence["last_date"] == dates[-1]
+        assert recurrence["occurrence_count"] == len(dates)
+    elif format_name == "csv":
+        row = next(csv.DictReader(io.StringIO(response.content.decode("utf-8-sig"))))
+        assert row["first_date"] == dates[0]
+        assert row["last_date"] == dates[-1]
+        assert int(row["occurrence_count"]) == len(dates)
+    else:
+        calendar_event = Calendar.from_ical(response.content).walk("VEVENT")[0]
+        assert calendar_event.decoded("dtstart").date() == expected_first
+        recurrence_rule = calendar_event["rrule"]
+        assert isinstance(recurrence_rule, vRecur)
+        assert recurrence_rule["COUNT"] == [len(dates)]
 
 
 @pytest.mark.django_db
@@ -382,10 +451,11 @@ def test_export_works_with_browser_accept_header(client):
 
 
 @pytest.mark.django_db
-def test_model_endpoint_requires_auth(client):
+def test_model_endpoint_requires_auth(client: Client) -> None:
     response = client.get(reverse("api:event"))
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response["WWW-Authenticate"] == "Bearer"
 
 
 @pytest.mark.django_db

@@ -169,9 +169,7 @@ def _build_recurrence(abstract_event: AbstractEvent) -> ApiScheduleRecurrence | 
             f"Active schedule event {abstract_event.pk} has invalid repetition period."
         )
 
-    day_offset = abstract_event.abstract_day.day_number
-    if schedule.starting_day_number.day_number >= 7:
-        day_offset -= 7
+    day_offset = abstract_event.abstract_day.day_number - schedule.starting_day_number.day_number
     first_date = schedule.start_date + timedelta(days=day_offset)
     while first_date < schedule.start_date:
         first_date += timedelta(days=interval)
