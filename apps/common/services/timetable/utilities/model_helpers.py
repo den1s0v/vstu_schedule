@@ -99,6 +99,9 @@ def is_abstract_event_already_exists(
     AbstractEvent must match in all participants and places
     """
 
+    participant_ids = {p.pk for p in participants}
+    place_ids = {p.pk for p in places}
+
     candidate_events = (
         AbstractEvent.objects.filter(
             kind=kind,
@@ -113,8 +116,8 @@ def is_abstract_event_already_exists(
             plc_count=Count("places", distinct=True),
         )
         .filter(
-            prt_count=len(participants),
-            plc_count=len(places),
+            prt_count=len(participant_ids),
+            plc_count=len(place_ids),
         )
     )
 

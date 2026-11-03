@@ -1270,6 +1270,33 @@ class TestEventImporter(TestCase):
         except Event.DoesNotExist:
             self.fail()
 
+        self.assertEqual(
+            AbstractEvent.objects.filter(
+                subject__name="ФИЛОСОФИЯ И МЕТОДОЛОГИЯ НАУКИ",
+                participants__name="ПОАС-2.1",
+                time_slot__alt_name="1-2",
+                holds_on_date=datetime.strptime("11.09.2026", "%d.%m.%Y").date(),
+            ).count(),
+            1,
+        )
+        self.assertEqual(
+            AbstractEvent.objects.filter(
+                subject__name="ФИЛОСОФИЯ И МЕТОДОЛОГИЯ НАУКИ",
+                participants__name="ПОАС-2.1",
+                holds_on_date=datetime.strptime("11.09.2026", "%d.%m.%Y").date(),
+            ).count(),
+            2,
+        )
+
+        self.assertEqual(
+            Event.objects.filter(
+                subject_override__name="ФИЛОСОФИЯ И МЕТОДОЛОГИЯ НАУКИ",
+                participants_override__name="ПОАС-2.1",
+                date=datetime.strptime("11.09.2026", "%d.%m.%Y").date(),
+            ).count(),
+            2,
+        )
+
     # test_import_event_for_not_existing_time_slot
 
 

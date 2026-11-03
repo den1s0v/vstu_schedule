@@ -194,7 +194,7 @@ def get_filtered_events(filters: dict) -> QuerySet[Event]:
             .distinct()
         )
 
-    return reader.get_found_models()
+    return reader.get_found_models().distinct()
 
 
 def has_more_events_than(events: QuerySet[Event], limit: int) -> bool:
