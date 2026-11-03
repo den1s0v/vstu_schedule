@@ -6,6 +6,7 @@
 {% block topbar_title %}Расписание · Мониторинг{% endblock %}
 {% block styles %}
   <link rel="stylesheet" href="{% static 'style/monitoring.css' %}">
+  <link rel="stylesheet" href="{% static 'style/event_cancellations.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -42,6 +43,8 @@
       <div class="stat-card__value" id="statVersions">—</div>
     </div>
   </section>
+
+  {% include "panel/includes/event_management.html" %}
 
   <div class="two-col two-col--narrow">
     <section class="card">
@@ -204,9 +207,11 @@
       </div>
     </div>
   </div>
+  {% include "panel/includes/cancellations.html" %}
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'src/event_cancellations.js' %}"></script>
 <script>
   window.MONITOR_CTX = {
     timeUpdate: "{{ time_update_value }}",

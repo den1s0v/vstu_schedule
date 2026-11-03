@@ -10,6 +10,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from apps.common.models import Setting
+from apps.panel.selectors import cancellation_departments
 from apps.panel.services.actions import (
     PANEL_ACTIONS_BY_ID,
     PASSWORD_REQUIRED_ACTION_IDS,
@@ -28,6 +29,7 @@ CLEAR_TYPES = ["Вся система", "Хранилище", "Логи зада
 def actions_panel(request: HttpRequest) -> HttpResponse:
     context = {
         "active_nav": "actions",
+        "cancellation_departments": cancellation_departments(),
         "file_actions": [
             action for action in PANEL_ACTIONS_BY_ID.values() if action.kind == "file"
         ],

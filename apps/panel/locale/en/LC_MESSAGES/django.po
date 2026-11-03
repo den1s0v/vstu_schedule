@@ -1,0 +1,113 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: vstu-schedule\n"
+"PO-Revision-Date: 2026-11-03 00:00+0300\n"
+"Last-Translator: \n"
+"Language-Team: en\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Отмены занятий"
+msgstr "Class cancellations"
+
+msgid "Управление событиями"
+msgstr "Event management"
+
+msgid "Не удалось выполнить запрос. Обновите страницу и повторите попытку."
+msgstr "The request failed. Reload the page and try again."
+
+msgid "Создано отмен:"
+msgstr "Cancellations created:"
+
+msgid "Уже существовало:"
+msgstr "Already existed:"
+
+msgid "Удалено отмен:"
+msgstr "Cancellations deleted:"
+
+msgid "Удалить найденные отмены? Занятия снова станут доступными."
+msgstr "Delete the matching cancellations? Classes will become available again."
+
+msgid "Удалить все отмены во всех подразделениях за все даты? Занятия снова станут доступными."
+msgstr "Delete all cancellations for every department and date? Classes will become available again."
+
+msgid "Закрыть"
+msgstr "Close"
+
+msgid "Дата начала"
+msgstr "Start date"
+
+msgid "Дата окончания"
+msgstr "End date"
+
+msgid "Для одной даты оставьте конец периода пустым. Обе границы включаются. Создать отмены можно максимум на 366 дней за один раз."
+msgstr "For a single date, leave the end date blank. Both dates are included. Create cancellations for up to 366 days at a time."
+
+msgid "Подразделения"
+msgstr "Departments"
+
+msgid "Если ничего не выбрано, действие применяется ко всем подразделениям."
+msgstr "If none are selected, the action applies to all departments."
+
+msgid "Поиск подразделения"
+msgstr "Find a department"
+
+msgid "Подразделений пока нет."
+msgstr "There are no departments yet."
+
+msgid "Все подразделения"
+msgstr "All departments"
+
+msgid "Сбросить выбор"
+msgstr "Clear selection"
+
+msgid "Отменить занятия"
+msgstr "Cancel classes"
+
+msgid "Найти отмены"
+msgstr "Find cancellations"
+
+msgid "Найденные отмены"
+msgstr "Matching cancellations"
+
+msgid "Найдено отмен:"
+msgstr "Cancellations found:"
+
+msgid "Удалить найденные"
+msgstr "Delete matching cancellations"
+
+msgid "Показаны первые 200 записей. Удаление найденных применяется ко всем результатам поиска."
+msgstr "Showing the first 200 records. Deleting matching cancellations applies to all search results."
+
+msgid "Дата"
+msgstr "Date"
+
+msgid "Подразделение"
+msgstr "Department"
+
+msgid "Подтвердить удаление"
+msgstr "Confirm deletion"
+
+msgid "Назад"
+msgstr "Back"
+
+msgid "Удалить все отмены"
+msgstr "Delete all cancellations"
+
+msgid "Конечная дата должна быть не раньше начальной."
+msgstr "The end date must not precede the start date."
+
+msgid "Для создания отмен выберите период не более 366 дней."
+msgstr "To create cancellations, choose a period of up to 366 days."
+
+msgid "Выбранное подразделение не найдено. Обновите страницу."
+msgstr "The selected department was not found. Reload the page."
+
+msgid "Подтвердите удаление всех отмен."
+msgstr "Confirm deletion of all cancellations."
+
+msgid "Выберите область удаления отмен."
+msgstr "Select which cancellations to delete."

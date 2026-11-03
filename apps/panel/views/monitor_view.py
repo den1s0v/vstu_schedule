@@ -13,6 +13,7 @@ from django.views.decorators.http import require_POST
 from apps.common.models import Alert, FileVersion, Resource, Setting
 from apps.common.selectors import admin_alerts
 from apps.common.services.alerts import render_alert_body
+from apps.panel.selectors import cancellation_departments
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ def monitoring_panel(request: HttpRequest) -> HttpResponse:
         "panel/timetable_update/monitoring.html",
         {
             "active_nav": "monitoring",
+            "cancellation_departments": cancellation_departments(),
             "time_update_value": time_update_value,
             "time_update_display": time_update_display,
             "time_update_is_custom": time_update_value not in SCAN_FREQUENCY_PRESETS,

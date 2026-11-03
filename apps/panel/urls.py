@@ -1,7 +1,7 @@
 from django.urls import path
 from django.views.generic import RedirectView
 
-from apps.panel.views import api_clients, monitor_view, task_view
+from apps.panel.views import api_clients, event_cancellations, monitor_view, task_view
 
 from .views import panel
 
@@ -10,6 +10,16 @@ urlpatterns = [
     path("login/", RedirectView.as_view(pattern_name="admin:login", permanent=False)),
     path("actions/", panel.actions_panel, name="panel_actions"),
     path("actions/run/", panel.run_panel_action, name="panel_action_run"),
+    path(
+        "event-cancellations/",
+        event_cancellations.event_cancellations,
+        name="panel_event_cancellations",
+    ),
+    path(
+        "event-cancellations/delete/",
+        event_cancellations.delete_event_cancellations,
+        name="panel_event_cancellations_delete",
+    ),
     path("api-clients/", api_clients.api_clients_panel, name="panel_api_clients"),
     path(
         "api-clients/<int:client_id>/revoke/",

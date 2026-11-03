@@ -1,0 +1,48 @@
+.panel-page .event-management { margin-bottom: 20px; }
+.panel-page .event-management .action-panel { border: 0; padding: 0; justify-items: start; }
+
+.cancellation-dialog {
+  width: min(760px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 24px;
+  overflow-y: auto;
+  color: var(--panel-text);
+  background: var(--panel-surface);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--panel-radius);
+  font: inherit;
+}
+.cancellation-dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+.cancellation-dialog [hidden] { display: none !important; }
+.cancellation-dialog__header,
+.cancellation-dialog__footer,
+.cancellation-toolbar,
+.cancellation-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.cancellation-dialog__header { margin-bottom: 20px; }
+.cancellation-dialog__header h2 { font-size: 18px; }
+.cancellation-dialog__footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--panel-border); }
+.cancellation-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cancellation-hint { color: var(--panel-text-muted); font-size: 12px; line-height: 1.6; margin: 10px 0; }
+.cancellation-departments { border: 0; padding: 0; margin: 20px 0; min-width: 0; }
+.cancellation-departments legend { font-weight: 700; }
+.cancellation-tags { display: flex; flex-wrap: wrap; gap: 8px; max-height: 180px; overflow-y: auto; padding: 10px 2px; }
+.cancellation-tag { position: relative; cursor: pointer; }
+.cancellation-tag input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.cancellation-tag span { display: block; padding: 6px 10px; border: 1px solid var(--panel-border); border-radius: 18px; font-size: 12px; overflow-wrap: anywhere; }
+.cancellation-tag input:checked + span { background: var(--panel-accent-soft); border-color: var(--panel-accent); color: var(--panel-accent); }
+.cancellation-tag input:focus-visible + span { outline: 2px solid var(--panel-accent); outline-offset: 2px; }
+.cancellation-selection { min-height: 32px; font-size: 12px; color: var(--panel-accent); }
+.cancellation-toolbar { margin-top: 16px; justify-content: flex-start; }
+.cancellation-results-scroll { max-height: 240px; overflow: auto; margin-top: 12px; }
+.cancellation-confirm { margin-top: 20px; padding: 16px; border: 1px solid var(--panel-danger); border-radius: var(--panel-radius); line-height: 1.6; }
+@media (max-width: 520px) {
+  .cancellation-dialog { padding: 16px; }
+  .cancellation-dates { grid-template-columns: 1fr; }
+}

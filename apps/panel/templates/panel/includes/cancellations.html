@@ -1,0 +1,77 @@
+{% load i18n %}
+<dialog class="cancellation-dialog" id="cancellationDialog" aria-labelledby="cancellationTitle"
+  data-url="{% url 'panel_event_cancellations' %}"
+  data-delete-url="{% url 'panel_event_cancellations_delete' %}"
+  data-error="{% translate 'Не удалось выполнить запрос. Обновите страницу и повторите попытку.' %}"
+  data-created="{% translate 'Создано отмен:' %}"
+  data-existing="{% translate 'Уже существовало:' %}"
+  data-deleted="{% translate 'Удалено отмен:' %}"
+  data-confirm-range="{% translate 'Удалить найденные отмены? Занятия снова станут доступными.' %}"
+  data-confirm-all="{% translate 'Удалить все отмены во всех подразделениях за все даты? Занятия снова станут доступными.' %}">
+  <div class="cancellation-dialog__header">
+    <h2 id="cancellationTitle">{% translate "Отмены занятий" %}</h2>
+    <button type="button" class="btn btn--ghost" data-close-cancellations aria-label="{% translate 'Закрыть' %}">×</button>
+  </div>
+  <form method="post" action="{% url 'panel_event_cancellations' %}" data-cancellation-form>
+    {% csrf_token %}
+    <div class="cancellation-dates">
+      <div class="field-group">
+        <label class="field-label" for="cancellationStart">{% translate "Дата начала" %}</label>
+        <input id="cancellationStart" class="field-input" type="date" name="left_date" required>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="cancellationEnd">{% translate "Дата окончания" %}</label>
+        <input id="cancellationEnd" class="field-input" type="date" name="right_date">
+      </div>
+    </div>
+    <p class="cancellation-hint">{% translate "Для одной даты оставьте конец периода пустым. Обе границы включаются. Создать отмены можно максимум на 366 дней за один раз." %}</p>
+    <fieldset class="cancellation-departments">
+      <legend>{% translate "Подразделения" %}</legend>
+      <p class="cancellation-hint">{% translate "Если ничего не выбрано, действие применяется ко всем подразделениям." %}</p>
+      <label class="field-label" for="cancellationDepartmentSearch">{% translate "Поиск подразделения" %}</label>
+      <input id="cancellationDepartmentSearch" class="field-input" type="search" data-department-search autocomplete="off">
+      <div class="cancellation-tags">
+        {% for department in cancellation_departments %}
+          <label class="cancellation-tag" title="{{ department.name }}" data-department-tag>
+            <input type="checkbox" name="departments" value="{{ department.pk }}">
+            <span>{{ department.name }}</span>
+          </label>
+        {% empty %}
+          <p>{% translate "Подразделений пока нет." %}</p>
+        {% endfor %}
+      </div>
+      <div class="cancellation-selection">
+        <span data-all-departments>{% translate "Все подразделения" %}</span>
+        <button type="button" class="btn btn--ghost btn--sm" data-clear-departments>{% translate "Сбросить выбор" %}</button>
+      </div>
+    </fieldset>
+    <div class="cancellation-toolbar">
+      <button type="submit" class="btn btn--primary">{% translate "Отменить занятия" %}</button>
+      <button type="button" class="btn btn--ghost" data-find-cancellations>{% translate "Найти отмены" %}</button>
+    </div>
+  </form>
+  <p class="task-status" role="status" aria-live="polite" data-cancellation-status hidden></p>
+  <section data-cancellation-results hidden aria-label="{% translate 'Найденные отмены' %}">
+    <div class="cancellation-toolbar">
+      <p>{% translate "Найдено отмен:" %} <strong data-cancellation-count>0</strong></p>
+      <button type="button" class="btn btn--danger btn--sm" data-delete-found disabled>{% translate "Удалить найденные" %}</button>
+    </div>
+    <p class="cancellation-hint" data-cancellation-truncated hidden>{% translate "Показаны первые 200 записей. Удаление найденных применяется ко всем результатам поиска." %}</p>
+    <div class="cancellation-results-scroll">
+      <table class="data-table">
+        <thead><tr><th>{% translate "Дата" %}</th><th>{% translate "Подразделение" %}</th></tr></thead>
+        <tbody data-cancellation-rows></tbody>
+      </table>
+    </div>
+  </section>
+  <div class="cancellation-confirm" data-cancellation-confirm hidden>
+    <p data-cancellation-confirm-text></p>
+    <div class="cancellation-toolbar">
+      <button type="button" class="btn btn--danger" data-confirm-delete>{% translate "Подтвердить удаление" %}</button>
+      <button type="button" class="btn btn--ghost" data-cancel-delete>{% translate "Назад" %}</button>
+    </div>
+  </div>
+  <div class="cancellation-dialog__footer">
+    <button type="button" class="btn btn--danger btn--sm" data-delete-all>{% translate "Удалить все отмены" %}</button>
+  </div>
+</dialog>

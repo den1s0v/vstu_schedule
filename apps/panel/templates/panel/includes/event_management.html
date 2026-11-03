@@ -1,0 +1,11 @@
+{% load i18n %}
+<section class="card event-management" aria-labelledby="eventManagementTitle">
+  <div class="card__header">
+    <h2 id="eventManagementTitle">{% translate "Управление событиями" %}</h2>
+  </div>
+  <div class="action-grid action-grid--compact">
+    <div class="action-panel">
+      {% include "panel/includes/cancellation_button.html" %}
+    </div>
+  </div>
+</section>
